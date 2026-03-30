@@ -1,13 +1,13 @@
 {
-  "pluginId": "yy",
-  "version": "1.0.1",
+  "pluginId": "twitch",
+  "version": "1.0.14",
   "apiVersion": 1,
-  "displayName": "YY直播",
-  "platformDescription": "全民娱乐的互动直播平台",
+  "displayName": "Twitch",
+  "platformDescription": "全球游戏直播平台",
   "liveTypes": [
-    "6"
+    "9"
   ],
-  "entry": "lp_plugin_yy_1.0.1_index.js",
+  "entry": "lp_plugin_twitch_1.0.14_index.js",
   "preloadScripts": [],
   "capabilities": {
     "categories": {
@@ -36,6 +36,9 @@
     }
   },
   "changelog": [
-    "第一次测试"
+    "Refactored categories to use a comprehensive static tree mirroring the Douyin plugin",
+    "Implement realtime chat (danmaku) via Twitch IRC WebSocket protocol",
+    "Replace dummy HTTP polling with true WebSocket connection parameters",
+    "Switch icons to use internal relative assets for new zip format"
   ]
 }

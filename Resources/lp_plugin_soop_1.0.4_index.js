@@ -322,12 +322,12 @@ async function _soop_search(keyword, page) {
 /**
  * 获取主播站点状态（用于 getLiveState / getRoomDetail 补充信息）
  */
-async function _soop_getStationStatus(bjId) {
+async function _soop_getStationStatus(bjId, authMode) {
   var resp = await _soop_request({
     url:
       "https://st.sooplive.co.kr/api/get_station_status.php?szBjId=" +
       encodeURIComponent(String(bjId)),
-  });
+  }, authMode);
   console.log(
     "[soop][raw][station_status] bjId=" +
       String(bjId) +
@@ -635,6 +635,7 @@ globalThis.LiveParsePlugin = {
   async getRoomDetail(payload) {
     var roomId = _soop_str(payload && payload.roomId);
     var userId = _soop_str(payload && payload.userId);
+    var detailAuthMode = "platform_cookie";
 
     var bjId = userId || roomId;
     if (!bjId)
@@ -644,7 +645,7 @@ globalThis.LiveParsePlugin = {
 
     // 先用收藏记录的 roomId 尝试获取当前频道
     try {
-      var channel = await _soop_getChannelInfo(bjId, roomId);
+      var channel = await _soop_getChannelInfo(bjId, roomId, detailAuthMode);
       if (Number(channel.RESULT) === 1 && channel.BNO) {
         return {
           userName: _soop_str(channel.BJNICK),
@@ -664,7 +665,7 @@ globalThis.LiveParsePlugin = {
 
     // 再用空 broadNo 查询当前频道，兼容收藏中 roomId 过期（主播重新开播后 BNO 变化）
     try {
-      var latestChannel = await _soop_getChannelInfo(bjId, "");
+      var latestChannel = await _soop_getChannelInfo(bjId, "", detailAuthMode);
       if (Number(latestChannel.RESULT) === 1 && latestChannel.BNO) {
         return {
           userName: _soop_str(latestChannel.BJNICK),
@@ -683,7 +684,7 @@ globalThis.LiveParsePlugin = {
     }
 
     // 从 station_status 获取基本信息
-    var stationData = await _soop_getStationStatus(bjId);
+    var stationData = await _soop_getStationStatus(bjId, detailAuthMode);
     if (stationData) {
       return {
         userName: _soop_str(stationData.user_nick || stationData.station_name),
@@ -709,6 +710,7 @@ globalThis.LiveParsePlugin = {
   async getLiveState(payload) {
     var roomId = _soop_str(payload && payload.roomId);
     var userId = _soop_str(payload && payload.userId);
+    var stateAuthMode = "platform_cookie";
 
     var bjId = userId || roomId;
     if (!bjId)
@@ -717,7 +719,7 @@ globalThis.LiveParsePlugin = {
       });
 
     try {
-      var channel = await _soop_getChannelInfo(bjId, "");
+      var channel = await _soop_getChannelInfo(bjId, "", stateAuthMode);
       if (Number(channel.RESULT) === 1 && channel.BNO) {
         return { liveState: "1" };
       }

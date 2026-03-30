@@ -1,16 +1,16 @@
 {
-  "pluginId": "youtube",
+  "pluginId": "douyin",
   "version": "1.0.9",
   "apiVersion": 1,
-  "displayName": "YouTube (JS PoC)",
-  "changelog": [
-    "回退到实际带音轨的直播清晰度链路，避免返回无声视频子流",
-    "按最高画质优先选择真实可播清晰度，并保留从高到低的画质列表"
-  ],
+  "displayName": "抖音",
+  "platformDescription": "抖音 - 记录美好生活",
   "liveTypes": [
-    "7"
+    "2"
   ],
-  "entry": "lp_plugin_youtube_1.0.9_index.js",
+  "entry": "lp_plugin_douyin_1.0.9_index.js",
+  "preloadScripts": [
+    "webmssdk.js"
+  ],
   "capabilities": {
     "categories": {
       "status": "available"
@@ -36,5 +36,9 @@
     "danmaku": {
       "status": "available"
     }
-  }
+  },
+  "changelog": [
+    "修复多机位播放：独立解析每个机位的 stream_info 流地址，不再复用主房间流",
+    "修复多机位 LiveQualityModel 解码失败：补齐 roomId 字段"
+  ]
 }

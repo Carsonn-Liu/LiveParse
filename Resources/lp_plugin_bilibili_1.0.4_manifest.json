@@ -1,15 +1,14 @@
 {
-  "pluginId": "douyin",
+  "pluginId": "bilibili",
   "version": "1.0.4",
   "apiVersion": 1,
-  "displayName": "Douyin (JS PoC)",
+  "displayName": "哔哩哔哩",
+  "platformDescription": "列表返回352、超清直播须在设置扫码",
   "liveTypes": [
-    "2"
+    "0"
   ],
-  "entry": "lp_plugin_douyin_1.0.4_index.js",
-  "preloadScripts": [
-    "webmssdk.js"
-  ],
+  "entry": "lp_plugin_bilibili_1.0.4_index.js",
+  "preloadScripts": [],
   "capabilities": {
     "categories": {
       "status": "available"
@@ -37,6 +36,6 @@
     }
   },
   "changelog": [
-    "修复播放清晰度解析：支持主备线路、多清晰度排序和原画兜底"
+    "getRoomDetail 添加 platform_cookie authMode 和 buvid Cookie，与 getPlayback 保持一致"
   ]
 }

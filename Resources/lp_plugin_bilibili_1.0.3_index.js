@@ -2,7 +2,8 @@ const _bili_ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/53
 const _bili_referer = "https://live.bilibili.com/";
 const _bili_playbackUserAgent = "libmpv";
 const _bili_playbackHeaders = {
-  "User-Agent": _bili_playbackUserAgent
+  "User-Agent": _bili_playbackUserAgent,
+  Referer: _bili_referer
 };
 const _bili_platformId = "bilibili";
 
@@ -83,6 +84,98 @@ async function _bili_getHeaders() {
     "User-Agent": _bili_ua,
     Referer: _bili_referer
   };
+}
+
+async function _bili_getPlaybackRequestHeaders(authMode) {
+  const headers = await _bili_getHeaders();
+  const buvids = await _bili_getBuvid3And4(authMode || "none");
+  const cookieParts = [];
+  if (buvids.b3) cookieParts.push(`buvid3=${String(buvids.b3)}`);
+  if (buvids.b4) cookieParts.push(`buvid4=${String(buvids.b4)}`);
+  if (cookieParts.length > 0) headers.Cookie = cookieParts.join("; ");
+  return headers;
+}
+
+function _bili_buildPlayInfoQuery(roomId, qn) {
+  const params = [
+    `room_id=${encodeURIComponent(String(roomId))}`,
+    "protocol=0,1",
+    "format=0,1,2",
+    "codec=0",
+    "platform=html5",
+    "dolby=5",
+    "mask=0"
+  ];
+  if (qn !== null && qn !== undefined && qn !== "") {
+    params.push(`qn=${encodeURIComponent(String(qn))}`);
+  }
+  return params.join("&");
+}
+
+async function _bili_fetchPlayInfo(roomId, qn, headers, authMode) {
+  const resp = await _bili_authRequest({
+    url: `https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo?${_bili_buildPlayInfoQuery(roomId, qn)}`,
+    method: "GET",
+    headers,
+    timeout: 20
+  }, authMode);
+  const obj = JSON.parse(resp.bodyText || "{}");
+  return ((((obj || {}).data || {}).playurl_info || {}).playurl) || {};
+}
+
+function _bili_getPlaybackQualityMetas(playurl) {
+  const titleByQn = {};
+  const gQnDesc = playurl && playurl.g_qn_desc ? playurl.g_qn_desc : [];
+  for (const item of gQnDesc) {
+    const qn = _bili_toNumberOrDefault(item && item.qn, 0);
+    if (!(qn > 0)) continue;
+    titleByQn[qn] = String((item && item.desc) || qn);
+  }
+
+  const qnList = [];
+  const seen = {};
+  const pushQn = function (rawQn) {
+    const qn = _bili_toNumberOrDefault(rawQn, 0);
+    if (!(qn > 0) || seen[qn]) return;
+    seen[qn] = true;
+    qnList.push(qn);
+  };
+
+  const streamList = playurl && playurl.stream ? playurl.stream : [];
+  for (const streamInfo of streamList) {
+    const formatList = streamInfo && streamInfo.format ? streamInfo.format : [];
+    for (const formatInfo of formatList) {
+      const codecList = formatInfo && formatInfo.codec ? formatInfo.codec : [];
+      for (const codecInfo of codecList) {
+        const acceptQnList = codecInfo && codecInfo.accept_qn ? codecInfo.accept_qn : [];
+        for (const acceptQn of acceptQnList) pushQn(acceptQn);
+      }
+    }
+  }
+
+  if (qnList.length === 0) {
+    for (const item of gQnDesc) pushQn(item && item.qn);
+  }
+  if (qnList.length === 0) pushQn(1500);
+
+  qnList.sort(function (a, b) { return b - a; });
+  return qnList.map(function (qn) {
+    return {
+      qn,
+      title: String(titleByQn[qn] || qn)
+    };
+  });
+}
+
+function _bili_comparePlaybackItem(a, b) {
+  const qnDiff = _bili_toNumberOrDefault(b && b.qn, 0) - _bili_toNumberOrDefault(a && a.qn, 0);
+  if (qnDiff !== 0) return qnDiff;
+  const aCodeType = String((a && a.liveCodeType) || "");
+  const bCodeType = String((b && b.liveCodeType) || "");
+  if (aCodeType === bCodeType) return 0;
+  if (aCodeType === "m3u8") return -1;
+  if (bCodeType === "m3u8") return 1;
+  return 0;
 }
 
 async function _bili_getAccessId(headers, authMode) {
@@ -251,87 +344,66 @@ async function _bili_getRoomList(id, parentId, page, headers, authMode) {
 }
 
 async function _bili_getPlayArgs(roomId, headers, authMode) {
-  const qualityResp = await _bili_authRequest({
-    url: `https://api.live.bilibili.com/room/v1/Room/playUrl?platform=web&cid=${encodeURIComponent(String(roomId))}&qn=`,
-    method: "GET",
-    headers,
-    timeout: 20
-  }, authMode);
-
-  const qualityObj = JSON.parse(qualityResp.bodyText || "{}");
-  const qualityDescription = (((qualityObj || {}).data || {}).quality_description) || null;
-
-  const liveQualitys = [];
+  const qualityProbe = await _bili_fetchPlayInfo(roomId, null, headers, authMode);
+  const qualityMetas = _bili_getPlaybackQualityMetas(qualityProbe);
   const hostArray = [];
+  const hostQualityMap = {};
+  const hostSeenUrlMap = {};
 
-  async function appendByQn(qn, title) {
-    const params = [
-      "platform=h5",
-      `room_id=${encodeURIComponent(String(roomId))}`,
-      `qn=${encodeURIComponent(String(qn))}`,
-      "protocol=0,1",
-      "format=0,1,2",
-      "codec=0",
-      "mask=0"
-    ].join("&");
-
-    const playInfoResp = await _bili_authRequest({
-      url: `https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo?${params}`,
-      method: "GET",
-      headers,
-      timeout: 20
-    }, authMode);
-    const playInfoObj = JSON.parse(playInfoResp.bodyText || "{}");
-    const streams = (((playInfoObj || {}).data || {}).playurl_info || {}).playurl;
-    const streamList = streams && streams.stream ? streams.stream : [];
+  for (const qualityMeta of qualityMetas) {
+    const playurl = await _bili_fetchPlayInfo(roomId, qualityMeta.qn, headers, authMode);
+    const streamList = playurl && playurl.stream ? playurl.stream : [];
 
     for (const streamInfo of streamList) {
       if (streamInfo.protocol_name !== "http_hls" && streamInfo.protocol_name !== "http_stream") continue;
 
-      const formatList = streamInfo.format || [];
-      const formatLast = formatList.length > 0 ? formatList[formatList.length - 1] : null;
-      const codecList = formatLast && formatLast.codec ? formatLast.codec : [];
-      const codecLast = codecList.length > 0 ? codecList[codecList.length - 1] : null;
-      const urlInfoList = codecLast && codecLast.url_info ? codecLast.url_info : [];
-      const urlInfoLast = urlInfoList.length > 0 ? urlInfoList[urlInfoList.length - 1] : null;
+      const formatList = streamInfo && streamInfo.format ? streamInfo.format : [];
+      for (const formatInfo of formatList) {
+        const codecList = formatInfo && formatInfo.codec ? formatInfo.codec : [];
+        for (const codecInfo of codecList) {
+          const baseUrl = String((codecInfo && codecInfo.base_url) || "");
+          const urlInfoList = codecInfo && codecInfo.url_info ? codecInfo.url_info : [];
+          if (!baseUrl || urlInfoList.length === 0) continue;
 
-      const host = String((urlInfoLast && urlInfoLast.host) || "");
-      const baseUrl = String((codecLast && codecLast.base_url) || "");
-      const extra = String((urlInfoLast && urlInfoLast.extra) || "");
-      if (!host) continue;
+          for (const urlInfo of urlInfoList) {
+            const host = String((urlInfo && urlInfo.host) || "");
+            const extra = String((urlInfo && urlInfo.extra) || "");
+            if (!host) continue;
 
-      if (!hostArray.includes(host)) hostArray.push(host);
-      liveQualitys.push({
-        roomId: String(roomId),
-        title: String(title || "默认"),
-        qn: Number(qn || 1500),
-        url: `${host}${baseUrl}${extra}`,
-        liveCodeType: streamInfo.protocol_name === "http_hls" ? "m3u8" : "flv",
-        liveType: "0",
-        userAgent: _bili_playbackUserAgent,
-        headers: _bili_playbackHeaders
-      });
+            const finalUrl = `${host}${baseUrl}${extra}`;
+            if (!hostQualityMap[host]) {
+              hostQualityMap[host] = [];
+              hostSeenUrlMap[host] = {};
+              hostArray.push(host);
+            }
+            if (hostSeenUrlMap[host][finalUrl]) continue;
+            hostSeenUrlMap[host][finalUrl] = true;
+
+            hostQualityMap[host].push({
+              roomId: String(roomId),
+              title: String(qualityMeta.title || "默认"),
+              qn: Number(qualityMeta.qn || 1500),
+              url: finalUrl,
+              liveCodeType: streamInfo.protocol_name === "http_hls" ? "m3u8" : "flv",
+              liveType: "0",
+              userAgent: _bili_playbackUserAgent,
+              headers: _bili_playbackHeaders
+            });
+          }
+        }
+      }
     }
   }
 
-  if (qualityDescription && qualityDescription.length > 0) {
-    for (const item of qualityDescription) {
-      await appendByQn(item.qn, item.desc);
-    }
-  } else {
-    await appendByQn(1500, "默认");
-  }
-
-  const out = [];
-  for (let i = 0; i < hostArray.length; i += 1) {
-    const host = hostArray[i];
-    const qualitys = liveQualitys.filter(function (item) { return String(item.url || "").includes(host); });
-    out.push({
-      cdn: `线路 ${i + 1}`,
+  return hostArray.map(function (host, index) {
+    const qualitys = (hostQualityMap[host] || []).slice().sort(_bili_comparePlaybackItem);
+    return {
+      cdn: `线路 ${index + 1}`,
       qualitys
-    });
-  }
-  return out;
+    };
+  }).filter(function (item) {
+    return item.qualitys.length > 0;
+  });
 }
 
 async function _bili_getLiveLatestInfo(roomId, headers, authMode) {
@@ -530,8 +602,9 @@ globalThis.LiveParsePlugin = {
   async getPlayback(payload) {
     const roomId = String(payload && payload.roomId ? payload.roomId : "");
     if (!roomId) _bili_throw("INVALID_ARGS", "roomId is required", { field: "roomId" });
-    const headers = await _bili_getHeaders();
-    return await _bili_getPlayArgs(roomId, headers);
+    const authMode = "platform_cookie";
+    const headers = await _bili_getPlaybackRequestHeaders(authMode);
+    return await _bili_getPlayArgs(roomId, headers, authMode);
   },
 
   async getRoomDetail(payload) {

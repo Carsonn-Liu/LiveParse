@@ -1,20 +1,21 @@
 {
   "apiVersion": 1,
-  "generatedAt": "2026-03-16T03:01:00Z",
+  "generatedAt": "2026-03-25T06:23:37Z",
   "plugins": [
     {
       "pluginId": "bilibili",
-      "version": "1.0.2",
+      "version": "1.0.4",
       "platform": "bilibili",
       "platformName": "哔哩哔哩",
       "zipURLs": [
-        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_bilibili_1.0.2.zip",
-        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_bilibili_1.0.2.zip"
+        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_bilibili_1.0.4.zip",
+        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_bilibili_1.0.4.zip"
       ],
-      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_bilibili_1.0.2.zip",
-      "sha256": "34bdeda3fa725661635292333fc72bd6f49bce9ccce4374f736ebefab25d44fc",
+      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_bilibili_1.0.4.zip",
+      "sha256": "3b111fcd9e89fc21169357df6f0a1454ee5406cb855682b16a2eb2c167d81a97",
+      "platformDescription": "列表返回352、超清直播须在设置扫码",
       "changelog": [
-        "修复弹幕连接：getDanmaku 添加 platform_cookie 认证"
+        "补齐房间详情登录态：getRoomDetail 添加 platform_cookie authMode 和 buvid Cookie，与 getPlayback 保持一致"
       ],
       "capabilities": {
         "categories": {
@@ -43,9 +44,9 @@
         }
       },
       "icon": "assets/live_card_bilibili.png",
+      "tvosIcon": "assets/live_card_bilibili.png",
       "iosIcon": "assets/pad_live_card_bilibili.png",
       "macosIcon": "assets/mini_live_card_bilibili.png",
-      "tvosIcon": "assets/live_card_bilibili.png",
       "tvosBigIcon": "assets/tv_bilibili_big.png",
       "tvosSmallIcon": "assets/tv_bilibili_small.png",
       "tvosBigIconDark": "assets/tv_bilibili_big_dark.png",
@@ -61,7 +62,8 @@
         "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_cc_1.0.0.zip"
       ],
       "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_cc_1.0.0.zip",
-      "sha256": "ae8131c02644b1a9848335632fd3a799cd0902636393e45184e12e0c191ea5cf",
+      "sha256": "8c4e64a4ea87d3c5be0b8290c93f23673f53d766d2012919a4914bce6a11748f",
+      "platformDescription": "网易游戏直播",
       "changelog": [
         "第一次测试"
       ],
@@ -92,9 +94,9 @@
         }
       },
       "icon": "assets/live_card_cc.png",
+      "tvosIcon": "assets/live_card_cc.png",
       "iosIcon": "assets/pad_live_card_cc.png",
       "macosIcon": "assets/mini_live_card_cc.png",
-      "tvosIcon": "assets/live_card_cc.png",
       "tvosBigIcon": "assets/tv_cc_big.png",
       "tvosSmallIcon": "assets/tv_cc_small.png",
       "tvosBigIconDark": "assets/tv_cc_big_dark.png",
@@ -102,17 +104,18 @@
     },
     {
       "pluginId": "douyin",
-      "version": "1.0.4",
+      "version": "1.0.9",
       "platform": "douyin",
       "platformName": "抖音",
       "zipURLs": [
-        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_douyin_1.0.4.zip",
-        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_douyin_1.0.4.zip"
+        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_douyin_1.0.9.zip",
+        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_douyin_1.0.9.zip"
       ],
-      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_douyin_1.0.4.zip",
-      "sha256": "8bd8491323fd363f6bdf3869cd27d17ffe8c3ec935be91b36cae699ed453f73c",
+      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_douyin_1.0.9.zip",
+      "sha256": "7236cf79e1353d102f6df7935db20a70e3f0e1a1f1f410e07232ef1cbfa8232c",
+      "platformDescription": "抖音 - 记录美好生活",
       "changelog": [
-        "修复播放清晰度解析：支持主备线路、多清晰度排序和原画兜底"
+        "修复多机位播放：独立解析每个机位的 stream_info 流地址，不再复用主房间流"
       ],
       "capabilities": {
         "categories": {
@@ -141,9 +144,9 @@
         }
       },
       "icon": "assets/live_card_douyin.png",
+      "tvosIcon": "assets/live_card_douyin.png",
       "iosIcon": "assets/pad_live_card_douyin.png",
       "macosIcon": "assets/mini_live_card_douyin.png",
-      "tvosIcon": "assets/live_card_douyin.png",
       "tvosBigIcon": "assets/tv_douyin_big.png",
       "tvosSmallIcon": "assets/tv_douyin_small.png",
       "tvosBigIconDark": "assets/tv_douyin_big_dark.png",
@@ -159,7 +162,8 @@
         "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_douyu_1.0.2.zip"
       ],
       "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_douyu_1.0.2.zip",
-      "sha256": "24ca2e36af0d68ec5699b9f13f1faf6df92a66db306c6737a2ca2df9a2e0066a",
+      "sha256": "39dacd7144bfd65aed55debf19d44f48093e0dd5ec8891c6bb26bcd3bcae4836",
+      "platformDescription": "每个人的直播平台",
       "changelog": [
         "修复 getRoomDetail 返回 userId 始终为 0 的问题：owner_id 改为 owner_uid"
       ],
@@ -190,9 +194,9 @@
         }
       },
       "icon": "assets/live_card_douyu.png",
+      "tvosIcon": "assets/live_card_douyu.png",
       "iosIcon": "assets/pad_live_card_douyu.png",
       "macosIcon": "assets/mini_live_card_douyu.png",
-      "tvosIcon": "assets/live_card_douyu.png",
       "tvosBigIcon": "assets/tv_douyu_big.png",
       "tvosSmallIcon": "assets/tv_douyu_small.png",
       "tvosBigIconDark": "assets/tv_douyu_big_dark.png",
@@ -208,7 +212,8 @@
         "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_huya_1.0.1.zip"
       ],
       "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_huya_1.0.1.zip",
-      "sha256": "02221e205eb3f24bd228e75ed75948c4ab70367e4b43b316efb184a2c54a8741",
+      "sha256": "d105a2ee6e6d746d696e7cda04794959033aad662f10ec93f843426d2610fca4",
+      "platformDescription": "竞技由我，玩在虎牙",
       "changelog": [
         "第一次测试"
       ],
@@ -239,13 +244,67 @@
         }
       },
       "icon": "assets/live_card_huya.png",
+      "tvosIcon": "assets/live_card_huya.png",
       "iosIcon": "assets/pad_live_card_huya.png",
       "macosIcon": "assets/mini_live_card_huya.png",
-      "tvosIcon": "assets/live_card_huya.png",
       "tvosBigIcon": "assets/tv_huya_big.png",
       "tvosSmallIcon": "assets/tv_huya_small.png",
       "tvosBigIconDark": "assets/tv_huya_big_dark.png",
       "tvosSmallIconDark": "assets/tv_huya_small_dark.png"
+    },
+    {
+      "pluginId": "kick",
+      "version": "1.0.3",
+      "platform": "kick",
+      "platformName": "Kick",
+      "zipURLs": [
+        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_kick_1.0.3.zip",
+        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_kick_1.0.3.zip"
+      ],
+      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_kick_1.0.3.zip",
+      "sha256": "9d69a6d65bcf209c0037149f67449d78cd96539e8f1afbf07630f192d0672f27",
+      "platformDescription": "海外互动直播平台（占位，不稳定）",
+      "changelog": [
+        "Parse HLS master playlist to provide individual quality/resolution options instead of only Auto",
+        "Add official Kick icon asset set and package assets in plugin zip",
+        "Improve playback handling: detect invalid playback auth token and provide clearer error",
+        "Add signed playback URL retry path and cookie-auth hint for access-controlled streams"
+      ],
+      "capabilities": {
+        "categories": {
+          "status": "available"
+        },
+        "rooms": {
+          "status": "available"
+        },
+        "playback": {
+          "status": "partial",
+          "reason": "部分直播流需要授权播放 token，未登录或受风控时会被 403 拒绝"
+        },
+        "search": {
+          "status": "available"
+        },
+        "roomDetail": {
+          "status": "available"
+        },
+        "liveState": {
+          "status": "available"
+        },
+        "shareResolve": {
+          "status": "available"
+        },
+        "danmaku": {
+          "status": "unavailable"
+        }
+      },
+      "icon": "assets/live_card_kick.png",
+      "tvosIcon": "assets/live_card_kick.png",
+      "iosIcon": "assets/pad_live_card_kick.png",
+      "macosIcon": "assets/mini_live_card_kick.png",
+      "tvosBigIcon": "assets/tv_kick_big.png",
+      "tvosSmallIcon": "assets/tv_kick_small.png",
+      "tvosBigIconDark": "assets/tv_kick_big_dark.png",
+      "tvosSmallIconDark": "assets/tv_kick_small_dark.png"
     },
     {
       "pluginId": "ks",
@@ -257,7 +316,8 @@
         "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.3.zip"
       ],
       "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.3.zip",
-      "sha256": "733a9f5b4d9cd7133d91285913c60e1e116b577b6342dea4b55cc4b9d9d3f5f1",
+      "sha256": "3c8acc3ee0f0c16e2bc3ef1b387cf33a873d439099a69a75f34c09ddd44d013d",
+      "platformDescription": "无法播放请手动打开任意直播间通过滑块验证码",
       "changelog": [
         "同步快手研究版播放清晰度：按码率从高到低排序并区分 H264/HEVC",
         "修复快手弹幕参数返回格式：恢复扁平 args，兼容宿主 danmaku 桥接",
@@ -291,9 +351,9 @@
         }
       },
       "icon": "assets/live_card_ks.png",
+      "tvosIcon": "assets/live_card_ks.png",
       "iosIcon": "assets/pad_live_card_ks.png",
       "macosIcon": "assets/mini_live_card_ks.png",
-      "tvosIcon": "assets/live_card_ks.png",
       "tvosBigIcon": "assets/tv_ks_big.png",
       "tvosSmallIcon": "assets/tv_ks_small.png",
       "tvosBigIconDark": "assets/tv_ks_big_dark.png",
@@ -301,18 +361,19 @@
     },
     {
       "pluginId": "soop",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "platform": "soop",
       "platformName": "SOOP",
       "zipURLs": [
-        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_soop_1.0.3.zip",
-        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_soop_1.0.3.zip"
+        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_soop_1.0.4.zip",
+        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_soop_1.0.4.zip"
       ],
-      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_soop_1.0.3.zip",
-      "sha256": "5adbbc6bc2a8831d21a623496d85e337e5a848e82374059409fccbebe1dca2b8",
+      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_soop_1.0.4.zip",
+      "sha256": "33350326ee87a003fb37587b51a81abf51e600d2a7a61e1f7ca36453c592805a",
+      "platformDescription": "韩国直播平台(原AfreecaTV)",
       "changelog": [
-        "修复弹幕连接：getDanmaku 请求补齐 platform_cookie，并透传运行时 cookie",
-        "优化播放清晰度顺序：getPlayback 改为从清晰到模糊排序，默认最高画质"
+        "补齐详情/状态登录态：getRoomDetail 与 getLiveState 改为统一走 platform_cookie",
+        "优化分享解析登录态：resolveShare 复用 getRoomDetail 的宿主 Cookie 路径"
       ],
       "capabilities": {
         "categories": {
@@ -342,13 +403,65 @@
         }
       },
       "icon": "assets/live_card_soop.png",
+      "tvosIcon": "assets/live_card_soop.png",
       "iosIcon": "assets/pad_live_card_soop.png",
       "macosIcon": "assets/mini_live_card_soop.png",
-      "tvosIcon": "assets/live_card_soop.png",
       "tvosBigIcon": "assets/tv_soop_big.png",
       "tvosSmallIcon": "assets/tv_soop_small.png",
       "tvosBigIconDark": "assets/tv_soop_big_dark.png",
       "tvosSmallIconDark": "assets/tv_soop_small_dark.png"
+    },
+    {
+      "pluginId": "twitch",
+      "version": "1.0.14",
+      "platform": "twitch",
+      "platformName": "Twitch",
+      "zipURLs": [
+        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_twitch_1.0.14.zip",
+        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_twitch_1.0.14.zip"
+      ],
+      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_twitch_1.0.14.zip",
+      "sha256": "0228f75bd77e8c642e15104965c62a82728278b12b3792cd5272ca99d90b7669",
+      "platformDescription": "全球游戏直播平台",
+      "changelog": [
+        "Implement realtime chat (danmaku) via Twitch IRC WebSocket protocol",
+        "Replace dummy HTTP polling with true WebSocket connection parameters",
+        "Switch icons to use internal relative assets for new zip format"
+      ],
+      "capabilities": {
+        "categories": {
+          "status": "available"
+        },
+        "rooms": {
+          "status": "available"
+        },
+        "playback": {
+          "status": "available"
+        },
+        "search": {
+          "status": "available"
+        },
+        "roomDetail": {
+          "status": "available"
+        },
+        "liveState": {
+          "status": "available"
+        },
+        "shareResolve": {
+          "status": "available"
+        },
+        "danmaku": {
+          "status": "available"
+        }
+      },
+      "icon": "assets/live_card_twitch.png",
+      "tvosIcon": "assets/live_card_twitch.png",
+      "iosIcon": "assets/pad_live_card_twitch.png",
+      "macosIcon": "assets/mini_live_card_twitch.png",
+      "tvosBigIcon": "assets/tv_twitch_big.png",
+      "tvosSmallIcon": "assets/tv_twitch_small.png",
+      "tvosBigIconDark": "assets/tv_twitch_big_dark.png",
+      "tvosSmallIconDark": "assets/tv_twitch_small_dark.png"
     },
     {
       "pluginId": "youtube",
@@ -360,7 +473,8 @@
         "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_youtube_1.1.0.zip"
       ],
       "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_youtube_1.1.0.zip",
-      "sha256": "22021436400de38802bb991e172ae4013a20f8252784833bb76bd6efe3cc30c5",
+      "sha256": "053115177a563bf06c269a1cf062d6b86caac2c21f6db7666f6dd2827f6a8a8d",
+      "platformDescription": "全球视频平台直播",
       "changelog": [
         "完整覆盖研究版 YouTube 播放链路：watch 初始响应 + youtubei 多端 player 统一收集 manifest",
         "按真实清晰度梯子评分选源，默认输出从高画质到低画质排序的质量列表",
@@ -393,9 +507,9 @@
         }
       },
       "icon": "assets/live_card_youtube.png",
+      "tvosIcon": "assets/live_card_youtube.png",
       "iosIcon": "assets/pad_live_card_youtube.png",
       "macosIcon": "assets/mini_live_card_youtube.png",
-      "tvosIcon": "assets/live_card_youtube.png",
       "tvosBigIcon": "assets/tv_youtube_big.png",
       "tvosSmallIcon": "assets/tv_youtube_small.png",
       "tvosBigIconDark": "assets/tv_youtube_big_dark.png",
@@ -411,7 +525,8 @@
         "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_yy_1.0.1.zip"
       ],
       "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_yy_1.0.1.zip",
-      "sha256": "d350c754969ebea023969e9b251fe8ef55b2e8e6bfb975a1bee55b09af3bbed4",
+      "sha256": "bd62fafb2e66059d5c111d4ba92de8eef209dd2c2cf9a790b5784a59d3b17d3e",
+      "platformDescription": "全民娱乐的互动直播平台",
       "changelog": [
         "第一次测试"
       ],
@@ -442,9 +557,9 @@
         }
       },
       "icon": "assets/live_card_yy.png",
+      "tvosIcon": "assets/live_card_yy.png",
       "iosIcon": "assets/pad_live_card_yy.png",
       "macosIcon": "assets/mini_live_card_yy.png",
-      "tvosIcon": "assets/live_card_yy.png",
       "tvosBigIcon": "assets/tv_yy_big.png",
       "tvosSmallIcon": "assets/tv_yy_small.png",
       "tvosBigIconDark": "assets/tv_yy_big_dark.png",
