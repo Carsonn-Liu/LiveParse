@@ -308,20 +308,18 @@
     },
     {
       "pluginId": "ks",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "platform": "ks",
       "platformName": "快手",
       "zipURLs": [
-        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.3.zip",
-        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.3.zip"
+        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.4.zip",
+        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.4.zip"
       ],
-      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.3.zip",
-      "sha256": "3c8acc3ee0f0c16e2bc3ef1b387cf33a873d439099a69a75f34c09ddd44d013d",
+      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.4.zip",
+      "sha256": "eb353d5239a63611a3ec52ae9b3ae8c2c23d3d55775f220b5dfe3603722a5122",
       "platformDescription": "无法播放请手动打开任意直播间通过滑块验证码",
       "changelog": [
-        "同步快手研究版播放清晰度：按码率从高到低排序并区分 H264/HEVC",
-        "修复快手弹幕参数返回格式：恢复扁平 args，兼容宿主 danmaku 桥接",
-        "保留 getDanmaku 的 platform_cookie 和 liveStreamId fallback，提高取参稳定性"
+        "补齐 getRoomDetail 登录态：getRoomDetail 添加 platform_cookie，getLiveState 同步生效"
       ],
       "capabilities": {
         "categories": {
