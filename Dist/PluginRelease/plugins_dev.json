@@ -308,21 +308,18 @@
     },
     {
       "pluginId": "ks",
-      "version": "1.0.5",
+      "version": "1.0.6",
       "platform": "ks",
       "platformName": "快手",
       "zipURLs": [
-        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.5.zip",
-        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.5.zip"
+        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.6.zip",
+        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.6.zip"
       ],
-      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.5.zip",
-      "sha256": "c5da1cef99679536c36006081ff41e8ae952eded748bc1407d54e273a61f27f7",
-      "platformDescription": "自生成浏览器指纹 cookie，无需手动验证",
+      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.6.zip",
+      "sha256": "70a186130403f2dc6466cbd4bcbbf83a846f583454df1ea62a4cd59c0de35b9e",
+      "platformDescription": "自生成指纹 cookie + 宿主登录态双通道",
       "changelog": [
-        "自生成 kwfv1/kwscode cookie，无需手动滑块验证即可获取直播流",
-        "纯 JS 实现 AES-128-CBC，不依赖宿主 cookie 和外部加密库",
-        "playback 状态从 partial 升级为 available",
-        "User-Agent 更新至 Chrome/146"
+        "恢复 platform_cookie 宿主登录态，与自生成 kwfv1/kwscode 双通道合并发送"
       ],
       "capabilities": {
         "categories": {
