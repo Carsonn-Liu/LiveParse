@@ -308,18 +308,21 @@
     },
     {
       "pluginId": "ks",
-      "version": "1.0.4",
+      "version": "1.0.5",
       "platform": "ks",
       "platformName": "快手",
       "zipURLs": [
-        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.4.zip",
-        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.4.zip"
+        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.5.zip",
+        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.5.zip"
       ],
-      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.4.zip",
-      "sha256": "eb353d5239a63611a3ec52ae9b3ae8c2c23d3d55775f220b5dfe3603722a5122",
-      "platformDescription": "无法播放请手动打开任意直播间通过滑块验证码",
+      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.5.zip",
+      "sha256": "c5da1cef99679536c36006081ff41e8ae952eded748bc1407d54e273a61f27f7",
+      "platformDescription": "自生成浏览器指纹 cookie，无需手动验证",
       "changelog": [
-        "补齐 getRoomDetail 登录态：getRoomDetail 添加 platform_cookie，getLiveState 同步生效"
+        "自生成 kwfv1/kwscode cookie，无需手动滑块验证即可获取直播流",
+        "纯 JS 实现 AES-128-CBC，不依赖宿主 cookie 和外部加密库",
+        "playback 状态从 partial 升级为 available",
+        "User-Agent 更新至 Chrome/146"
       ],
       "capabilities": {
         "categories": {
@@ -329,8 +332,7 @@
           "status": "available"
         },
         "playback": {
-          "status": "partial",
-          "reason": "不稳定，报错请使用PC版本快手拖动滑块验证"
+          "status": "available"
         },
         "search": {
           "status": "available"
