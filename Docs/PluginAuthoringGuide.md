@@ -222,6 +222,41 @@ async function request(request, authMode) {
 - `bodyText`
 - `bodyBase64`
 
+### 5.1.1 cookieInject — 从 Cookie 提取值注入请求
+
+当需要把 Cookie 中的某个值提取出来作为 header、query 参数或 JSON body 字段发送时，使用 `cookieInject`。**必须配合 `authMode: "platform_cookie"` 使用。**
+
+```js
+await Host.http.request({
+  platformId: "twitch",
+  authMode: "platform_cookie",
+  cookieInject: [
+    { cookieName: "auth-token", target: "header", headerName: "Authorization", prefix: "OAuth " },
+    { cookieName: "unique_id",  target: "query",  queryName: "uid" },
+    { cookieName: "sess-key",   target: "body",   bodyPath: "extensions.auth.token" }
+  ],
+  request: { url: "https://gql.twitch.tv/gql", method: "POST", ... }
+});
+```
+
+每条规则的字段：
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `cookieName` | 是 | 要从平台 Cookie 中提取的 cookie 名 |
+| `target` | 否 | `"header"`（默认）、`"query"` 或 `"body"` |
+| `headerName` | target=header 时必填 | 注入的 HTTP header 名 |
+| `queryName` | target=query 时必填 | 注入的 URL query 参数名 |
+| `bodyPath` | target=body 时必填 | 注入的 JSON body key path，支持嵌套（`.` 分隔），如 `"data.token"` → `{"data":{"token":"xxx"}}` |
+| `prefix` | 否 | 值前缀，如 `"OAuth "`、`"Bearer "` |
+
+规则说明：
+
+- 若 Cookie 中找不到对应 `cookieName` 或值为空，该条规则静默跳过，不影响请求发出。
+- `target: "body"` 会解析现有 `request.body` 为 JSON 对象后追加字段，若原 body 非 JSON 则创建新对象。
+- 多条规则按数组顺序依次执行，可同时注入 header + query + body。
+- `cookieInject` 是通用机制，不含签名逻辑。需要请求签名的平台（如小红书）应使用 `signing` 字段。
+
 ### 5.2 错误抛出
 
 统一走 `Host.raise(code, message, context)`，便于 Swift 侧做增强错误映射。
@@ -236,6 +271,8 @@ async function request(request, authMode) {
 
 - 宿主已接管 `setCookie`/`clearCookie` 调用，插件侧不必重复实现存储逻辑。
 - 需要平台 Cookie 的请求，使用 `authMode: "platform_cookie"`。
+- 需要从 Cookie 中提取值作为 header/query/body 参数时，使用 `cookieInject`（见 5.1.1）。
+- 需要请求签名的平台（如小红书），使用 `signing` 字段，与 `cookieInject` 互不干扰。
 - 插件内部不要把敏感 token/cookie 写入仓库。
 
 ## 7. 新增“官方平台”还需要做什么
