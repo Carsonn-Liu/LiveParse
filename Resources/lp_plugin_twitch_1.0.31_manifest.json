@@ -1,0 +1,66 @@
+{
+  "pluginId": "twitch",
+  "version": "1.0.31",
+  "apiVersion": 1,
+  "displayName": "Twitch",
+  "platformDescription": "全球游戏直播平台",
+  "liveTypes": [
+    "9"
+  ],
+  "entry": "lp_plugin_twitch_1.0.31_index.js",
+  "preloadScripts": [],
+  "capabilities": {
+    "categories": {
+      "status": "available"
+    },
+    "rooms": {
+      "status": "available"
+    },
+    "playback": {
+      "status": "available"
+    },
+    "search": {
+      "status": "available"
+    },
+    "roomDetail": {
+      "status": "available"
+    },
+    "liveState": {
+      "status": "available"
+    },
+    "shareResolve": {
+      "status": "available"
+    },
+    "danmaku": {
+      "status": "available"
+    }
+  },
+  "changelog": [
+    "Align Twitch playback closer to Streamlink by preferring embed playerType first and falling back to site on retry",
+    "Switch Twitch usher playback URLs to the v2 channel endpoint and add Streamlink-style platform and random p query params",
+    "Prefer platform_cookie when fetching Twitch playback GQL tokens so playback uses the logged-in token path instead of anonymous ad-prone tokens",
+    "Add bounded Twitch playback retries and switch the second attempt to embed playerType when the site token path stalls",
+    "Remove the Auto playback item and return parsed quality variants in descending bitrate order by default",
+    "Make Twitch playback headers more conservative by returning User-Agent inside the final quality headers, matching the older working playback path",
+    "Trim Worker and Helix requests down to minimal required headers to avoid host-side timeouts caused by browser-style headers on the official API path",
+    "Stop sending Referer, Origin, and default browser User-Agent on Twitch token server and Helix requests",
+    "Reduce getCategories to a single Helix games top request so the directory entry no longer waits on multi-page category fetches",
+    "Use stale cached Twitch categories when Helix category refresh fails instead of timing out the category page",
+    "Remove the Helix preflight from getPlayback so entering a room no longer depends on extra Worker and Helix requests before fetching playback",
+    "Reduce Twitch playback startup to the actual playback token and usher playlist chain",
+    "Hardcode the Twitch Worker token endpoint into the plugin so Helix auth no longer depends on host runtime config",
+    "Remove the Twitch web GQL fallback for categories, rooms, search, detail, live state, and share resolve",
+    "Run Twitch browsing data entirely through the server-backed official API path while keeping playback on the existing playback token chain",
+    "Add official Twitch API mode driven by a runtime tokenServerURL so the plugin can fetch app tokens from a server without embedding secrets",
+    "Use Helix games top, streams, search channels, users, and streams by user when official server-backed auth is configured",
+    "Replace Twitch room cursor paging with a first-page prefetch cache so category and all-room lists stop failing on integrity-challenged after cursors",
+    "Slice cached room lists locally and return empty pages after the prefetched Twitch room window is exhausted",
+    "Stop Twitch category loading after the first games page to avoid second-page integrity challenges on getCategories",
+    "Avoid Host platform_cookie on Twitch GQL and default public queries to anonymous requests to bypass integrity failures",
+    "Only attach Twitch Cookie and OAuth headers when the host explicitly passes raw cookie data to the plugin",
+    "Rewrite Twitch as a user-cookie plugin around Twitch website GQL instead of Helix",
+    "Load categories from Twitch games GQL and room lists from streams and game.streams cursors",
+    "Keep playback on Twitch GQL plus usher HLS while reusing cookieInject auth-token and unique_id headers",
+    "Use searchSuggestions and user profile GQL for search, room detail, live state, and share resolve"
+  ]
+}
