@@ -972,6 +972,11 @@ async function _xhs_fetchLiveListFromAPI(payload) {
   }, false);
   const obj = _xhs_responseJSON(resp);
   if (!obj) _xhs_throw("INVALID_RESPONSE", "xiaohongshu live list response invalid", { url });
+  var _httpCode = Number(resp && (resp.statusCode || resp.status)) || 0;
+  var _jsonCode = obj != null ? obj.code : undefined;
+  if (_httpCode === 406 || _jsonCode === -1 || _jsonCode === "-1") {
+    _xhs_throw("406", "xiaohongshu request rejected", { httpCode: String(_httpCode), jsonCode: String(_jsonCode), url: url });
+  }
   const items = _xhs_collectLiveListItems(obj);
   const nextCursor = _xhs_cursorFromResponse(obj, items);
   if (nextCursor) {
@@ -994,6 +999,7 @@ async function _xhs_getRooms(payload) {
   try {
     return await _xhs_fetchLiveListFromAPI(Object.assign({}, payload || {}, { categoryId }));
   } catch (e) {
+    if (e && (e.code === "406" || (typeof e.message === "string" && e.message.indexOf("406") >= 0))) throw e;
     try {
       return await _xhs_fetchLiveListFromPage(categoryId);
     } catch (e2) {
@@ -1186,6 +1192,11 @@ globalThis.LiveParsePlugin = {
       timeout: 20
     }, false);
     const obj = _xhs_responseJSON(resp);
+    var _httpCode = Number(resp && (resp.statusCode || resp.status)) || 0;
+    var _jsonCode = obj != null ? obj.code : undefined;
+    if (_httpCode === 406 || _jsonCode === -1 || _jsonCode === "-1") {
+      _xhs_throw("406", "xiaohongshu request rejected", { httpCode: String(_httpCode), jsonCode: String(_jsonCode) });
+    }
     const categories = (obj && obj.data && Array.isArray(obj.data.categories)) ? obj.data.categories : [];
     const subList = categories.map(function (cat) {
       return {
