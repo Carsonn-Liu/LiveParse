@@ -104,22 +104,18 @@
     },
     {
       "pluginId": "douyin",
-      "version": "1.0.7",
+      "version": "1.0.9",
       "platform": "douyin",
       "platformName": "抖音",
       "zipURLs": [
-        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_douyin_1.0.7.zip",
-        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_douyin_1.0.7.zip"
+        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_douyin_1.0.9.zip",
+        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_douyin_1.0.9.zip"
       ],
-      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_douyin_1.0.7.zip",
-      "sha256": "ea1e781747b82558739c71fb3ca16b9f735638f29e23446d24733e267cbcab29",
+      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_douyin_1.0.9.zip",
+      "sha256": "7236cf79e1353d102f6df7935db20a70e3f0e1a1f1f410e07232ef1cbfa8232c",
       "platformDescription": "抖音 - 记录美好生活",
       "changelog": [
-        "修复分享口令 roomId 提取：兼容 reflow RSC 转义 payload 中的 webRid 字段",
-        "优化分享口令解析：优先复用 reflow 分享页元数据，避免空白直播间信息",
-        "恢复 getPlayback 多机位解析：支持按视角返回附加线路",
-        "修复直播搜索：切换到 live search 接口并对齐 Web 请求参数",
-        "修复分享口令解析：短链和口令可稳定回落到直播间"
+        "修复多机位播放：独立解析每个机位的 stream_info 流地址，不再复用主房间流"
       ],
       "capabilities": {
         "categories": {
@@ -258,20 +254,18 @@
     },
     {
       "pluginId": "ks",
-      "version": "1.0.3",
+      "version": "1.0.6",
       "platform": "ks",
       "platformName": "快手",
       "zipURLs": [
-        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.3.zip",
-        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.3.zip"
+        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.6.zip",
+        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.6.zip"
       ],
-      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.3.zip",
-      "sha256": "3c8acc3ee0f0c16e2bc3ef1b387cf33a873d439099a69a75f34c09ddd44d013d",
-      "platformDescription": "无法播放请手动打开任意直播间通过滑块验证码",
+      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_ks_1.0.6.zip",
+      "sha256": "70a186130403f2dc6466cbd4bcbbf83a846f583454df1ea62a4cd59c0de35b9e",
+      "platformDescription": "自生成指纹 cookie + 宿主登录态双通道",
       "changelog": [
-        "同步快手研究版播放清晰度：按码率从高到低排序并区分 H264/HEVC",
-        "修复快手弹幕参数返回格式：恢复扁平 args，兼容宿主 danmaku 桥接",
-        "保留 getDanmaku 的 platform_cookie 和 liveStreamId fallback，提高取参稳定性"
+        "恢复 platform_cookie 宿主登录态，与自生成 kwfv1/kwscode 双通道合并发送"
       ],
       "capabilities": {
         "categories": {
@@ -281,8 +275,7 @@
           "status": "available"
         },
         "playback": {
-          "status": "partial",
-          "reason": "不稳定，报错请使用PC版本快手拖动滑块验证"
+          "status": "available"
         },
         "search": {
           "status": "available"
