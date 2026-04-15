@@ -253,6 +253,61 @@
       "tvosSmallIconDark": "assets/tv_huya_small_dark.png"
     },
     {
+      "pluginId": "kick",
+      "version": "1.0.22",
+      "platform": "kick",
+      "platformName": "Kick",
+      "zipURLs": [
+        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_kick_1.0.22.zip",
+        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_kick_1.0.22.zip"
+      ],
+      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_kick_1.0.22.zip",
+      "sha256": "83fe8f82671bb5b540c693a3459d59def3d503e404e8be28353b982f90c396ad",
+      "platformDescription": "海外互动直播平台（支持应用内登录会话）",
+      "changelog": [
+        "使用插件请将APP更新至以下版本： iOS 2.0.0(34) macOS 2.0.0(24) tvOS 2.0.0(18)",
+        "改为通过内置 Worker 获取 Kick 官方 app token，插件不再需要直接持有 client_secret",
+        "getCategories/getRooms 默认优先走 Kick 官方 API，官方链路失败时再回退当前网页接口",
+        "接入 Kick 应用内登录会话：新增 setCookie/clearCookie 兼容入口并维护运行时 cookie",
+        "getPlayback/getRoomDetail/getLiveState/resolveShare 改为优先使用宿主 Kick 登录态"
+      ],
+      "capabilities": {
+        "categories": {
+          "status": "available"
+        },
+        "rooms": {
+          "status": "available"
+        },
+        "playback": {
+          "status": "partial",
+          "reason": "部分直播流需要登录态或授权播放 token，受风控时仍可能返回 403"
+        },
+        "search": {
+          "status": "available"
+        },
+        "roomDetail": {
+          "status": "available"
+        },
+        "liveState": {
+          "status": "available"
+        },
+        "shareResolve": {
+          "status": "available"
+        },
+        "danmaku": {
+          "status": "unavailable"
+        }
+      },
+      "icon": "assets/live_card_kick.png",
+      "tvosIcon": "assets/live_card_kick.png",
+      "iosIcon": "assets/pad_live_card_kick.png",
+      "macosIcon": "assets/mini_live_card_kick.png",
+      "tvosBigIcon": "assets/tv_kick_big.png",
+      "tvosSmallIcon": "assets/tv_kick_small.png",
+      "tvosBigIconDark": "assets/tv_kick_big_dark.png",
+      "tvosSmallIconDark": "assets/tv_kick_small_dark.png"
+    },
+    {
       "pluginId": "ks",
       "version": "1.0.6",
       "platform": "ks",
@@ -356,20 +411,21 @@
     },
     {
       "pluginId": "twitch",
-      "version": "1.0.14",
+      "version": "1.0.31",
       "platform": "twitch",
       "platformName": "Twitch",
       "zipURLs": [
-        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_twitch_1.0.14.zip",
-        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_twitch_1.0.14.zip"
+        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_twitch_1.0.31.zip",
+        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_twitch_1.0.31.zip"
       ],
-      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_twitch_1.0.14.zip",
-      "sha256": "0228f75bd77e8c642e15104965c62a82728278b12b3792cd5272ca99d90b7669",
+      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_twitch_1.0.31.zip",
+      "sha256": "f11323c0a563e1ccec9764a824a4e193aaf86db9a4d7984df0c7d0e387a9af15",
       "platformDescription": "全球游戏直播平台",
       "changelog": [
-        "Implement realtime chat (danmaku) via Twitch IRC WebSocket protocol",
-        "Replace dummy HTTP polling with true WebSocket connection parameters",
-        "Switch icons to use internal relative assets for new zip format"
+        "使用插件请将APP更新至以下版本： iOS 2.0.0(34) macOS 2.0.0(24) tvOS 2.0.0(18)",
+        "Rewrite Twitch as a user-cookie plugin around Twitch website GQL instead of Helix",
+        "Prefer platform_cookie when fetching Twitch playback GQL tokens so playback uses the logged-in token path",
+        "Implement realtime chat (danmaku) via Twitch IRC WebSocket protocol"
       ],
       "capabilities": {
         "categories": {
@@ -507,6 +563,171 @@
       "tvosSmallIcon": "assets/tv_yy_small.png",
       "tvosBigIconDark": "assets/tv_yy_big_dark.png",
       "tvosSmallIconDark": "assets/tv_yy_small_dark.png"
+    },
+    {
+      "pluginId": "xiaohongshu",
+      "version": "1.0.7",
+      "platform": "xiaohongshu",
+      "platformName": "小红书",
+      "zipURLs": [
+        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_xiaohongshu_1.0.7.zip",
+        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_xiaohongshu_1.0.7.zip"
+      ],
+      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_xiaohongshu_1.0.7.zip",
+      "sha256": "08a6f94d7a41294b90cc7603e8b9830cec50345715d9101f1167982dd6aba6a8",
+      "platformDescription": "小红书直播（登录后可用）",
+      "changelog": [
+        "使用插件请将APP更新至以下版本： iOS 2.0.0(34) macOS 2.0.0(24) tvOS 2.0.0(18)",
+        "1.0.7：修正 getCategories/getRooms 遇到 HTTP 406 或 code=-1 时抛异常给宿主",
+        "1.0.6：修正 liveState 映射；playback 优先取 quality_type_name；capabilities 完善功能状态描述"
+      ],
+      "capabilities": {
+        "categories": {
+          "status": "partial",
+          "reason": "登录后可用"
+        },
+        "rooms": {
+          "status": "partial",
+          "reason": "登录后可用"
+        },
+        "playback": {
+          "status": "partial",
+          "reason": "登录后可用"
+        },
+        "search": {
+          "status": "unavailable"
+        },
+        "roomDetail": {
+          "status": "partial",
+          "reason": "登录后可用"
+        },
+        "liveState": {
+          "status": "partial",
+          "reason": "登录后可用"
+        },
+        "shareResolve": {
+          "status": "partial",
+          "reason": "登录后可用"
+        },
+        "danmaku": {
+          "status": "unavailable"
+        }
+      },
+      "icon": "assets/live_card_xiaohongshu.png",
+      "tvosIcon": "assets/live_card_xiaohongshu.png",
+      "iosIcon": "assets/pad_live_card_xiaohongshu.png",
+      "macosIcon": "assets/mini_live_card_xiaohongshu.png",
+      "tvosBigIcon": "assets/tv_xiaohongshu_big.png",
+      "tvosSmallIcon": "assets/tv_xiaohongshu_small.png",
+      "tvosBigIconDark": "assets/tv_xiaohongshu_big_dark.png",
+      "tvosSmallIconDark": "assets/tv_xiaohongshu_small_dark.png"
+    },
+    {
+      "pluginId": "chzzk",
+      "version": "1.0.3",
+      "platform": "chzzk",
+      "platformName": "CHZZK",
+      "zipURLs": [
+        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_chzzk_1.0.3.zip",
+        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_chzzk_1.0.3.zip"
+      ],
+      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_chzzk_1.0.3.zip",
+      "sha256": "97d7b1e587f1a60ebf327d0fcb08735e1c64fa2e00dac7e4f13d5f23529b974d",
+      "platformDescription": "NAVER 旗下韩国直播平台",
+      "changelog": [
+        "使用插件请将APP更新至以下版本： iOS 2.0.0(34) macOS 2.0.0(24) tvOS 2.0.0(18)",
+        "分类页 getRooms 固定按 50 条抓取，避免宿主 pageSize=20 时只看到 20 个房间",
+        "保留单页请求策略，避免切换分类时后台请求风暴"
+      ],
+      "capabilities": {
+        "categories": {
+          "status": "available"
+        },
+        "rooms": {
+          "status": "available"
+        },
+        "playback": {
+          "status": "available"
+        },
+        "search": {
+          "status": "available"
+        },
+        "roomDetail": {
+          "status": "available"
+        },
+        "liveState": {
+          "status": "available"
+        },
+        "shareResolve": {
+          "status": "available"
+        },
+        "danmaku": {
+          "status": "not_supported"
+        }
+      },
+      "icon": "assets/live_card_chzzk.png",
+      "tvosIcon": "assets/live_card_chzzk.png",
+      "iosIcon": "assets/pad_live_card_chzzk.png",
+      "macosIcon": "assets/mini_live_card_chzzk.png",
+      "tvosBigIcon": "assets/tv_chzzk_big.png",
+      "tvosSmallIcon": "assets/tv_chzzk_small.png",
+      "tvosBigIconDark": "assets/tv_chzzk_big_dark.png",
+      "tvosSmallIconDark": "assets/tv_chzzk_small_dark.png"
+    },
+    {
+      "pluginId": "panda",
+      "version": "1.0.1",
+      "platform": "panda",
+      "platformName": "PandaTV",
+      "zipURLs": [
+        "https://ghfast.top/https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_panda_1.0.1.zip",
+        "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_panda_1.0.1.zip"
+      ],
+      "zipURL": "https://github.com/pcccccc/LiveParse/releases/download/2.1.0/liveparse_panda_1.0.1.zip",
+      "sha256": "419d39974eae42d044029dfd0f8a880d7b18f8e3f1f29f4c5a49c673f99f55f0",
+      "platformDescription": "韩国直播平台 팬더티비",
+      "changelog": [
+        "使用插件请将APP更新至以下版本： iOS 2.0.0(34) macOS 2.0.0(24) tvOS 2.0.0(18)",
+        "新增 PandaTV(pandalive.co.kr) 插件：支持直播列表、主播搜索、房间详情、直播状态、分享解析和 HLS 播放"
+      ],
+      "capabilities": {
+        "categories": {
+          "status": "partial",
+          "reason": "平台未提供传统分区，返回直播排序入口"
+        },
+        "rooms": {
+          "status": "available"
+        },
+        "playback": {
+          "status": "partial",
+          "reason": "密码房及需要登录鉴权的房间不可解析"
+        },
+        "search": {
+          "status": "partial",
+          "reason": "搜索接口返回 BJ/主播结果"
+        },
+        "roomDetail": {
+          "status": "available"
+        },
+        "liveState": {
+          "status": "available"
+        },
+        "shareResolve": {
+          "status": "available"
+        },
+        "danmaku": {
+          "status": "partial",
+          "reason": "已实现 Centrifuge WebSocket 连接，消息字段按平台 JSON 载荷解析"
+        }
+      },
+      "icon": "assets/live_card_panda.png",
+      "tvosIcon": "assets/live_card_panda.png",
+      "iosIcon": "assets/pad_live_card_panda.png",
+      "macosIcon": "assets/mini_live_card_panda.png",
+      "tvosBigIcon": "assets/tv_panda_big.png",
+      "tvosSmallIcon": "assets/tv_panda_small.png",
+      "tvosBigIconDark": "assets/tv_panda_big_dark.png",
+      "tvosSmallIconDark": "assets/tv_panda_small_dark.png"
     }
   ]
 }
