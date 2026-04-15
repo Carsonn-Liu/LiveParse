@@ -473,7 +473,7 @@ function _cz_buildPlaybackFromVariants(playbackJson, roomId, variantMap) {
     const mediaPath = _cz_str(media && media.path);
     const variants = variantMap && mediaPath ? variantMap[mediaPath] : null;
     for (const track of tracks) {
-      const directPath = _cz_str(track && track.path);
+      const directPath = _cz_resolveM3U8URL(_cz_str(track && track.path), mediaPath);
       const variant = directPath ? null : _cz_pickVariantForTrack(track, variants);
       const path = directPath || _cz_str(variant && variant.url);
       if (!path) continue;
