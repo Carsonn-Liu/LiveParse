@@ -1,1 +1,1 @@
-93f13320ad2272e660ed9741753226e6342deeba75ed7a02cf63e29ab90401c2  liveparse_chzzk_1.0.4.zip
+876de575d7a6cbb0f024603da95fdb4cccfa048bbe91cec3cb8a4fd8d08e2d9e  liveparse_chzzk_1.0.5.zip

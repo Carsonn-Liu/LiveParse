@@ -356,18 +356,64 @@ function _cz_resolveM3U8URL(url, baseUrl) {
   const source = _cz_str(url).trim();
   const base = _cz_str(baseUrl).trim();
   if (!source) return "";
-  try {
-    const resolved = new URL(source, base);
-    if (!/^[a-z][a-z0-9+.-]*:/i.test(source)) {
-      const baseQuery = new URL(base).search;
-      if (baseQuery && !resolved.search) {
-        resolved.search = baseQuery;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(source)) return source;
+  if (!base) return source;
+
+  // Keep the URL-constructor path when available, and fall back to manual
+  // resolution for runtimes where URL is missing (some mobile JS engines).
+  if (typeof URL === "function") {
+    try {
+      const resolved = new URL(source, base);
+      if (!/^[a-z][a-z0-9+.-]*:/i.test(source)) {
+        const baseQuery = new URL(base).search;
+        if (baseQuery && !resolved.search) {
+          resolved.search = baseQuery;
+        }
       }
-    }
-    return resolved.toString();
-  } catch (_) {
-    return source;
+      return resolved.toString();
+    } catch (_) {}
   }
+
+  const baseNoHash = base.split("#")[0];
+  const baseQueryIndex = baseNoHash.indexOf("?");
+  const basePathOnly = baseQueryIndex >= 0 ? baseNoHash.slice(0, baseQueryIndex) : baseNoHash;
+  const baseQuery = baseQueryIndex >= 0 ? baseNoHash.slice(baseQueryIndex) : "";
+  const originMatch = basePathOnly.match(/^([a-z][a-z0-9+.-]*:\/\/[^\/?#]+)/i);
+  const origin = originMatch ? originMatch[1] : "";
+  const sourceNoHash = source.split("#")[0];
+
+  function _normalizePath(path) {
+    const parts = path.split("/");
+    const stack = [];
+    for (const part of parts) {
+      if (!part || part === ".") continue;
+      if (part === "..") {
+        if (stack.length > 0) stack.pop();
+        continue;
+      }
+      stack.push(part);
+    }
+    return "/" + stack.join("/");
+  }
+
+  if (source.startsWith("//")) {
+    const schemeMatch = basePathOnly.match(/^([a-z][a-z0-9+.-]*:)/i);
+    const scheme = schemeMatch ? schemeMatch[1] : "https:";
+    return scheme + source;
+  }
+
+  if (source.startsWith("/")) {
+    if (!origin) return source;
+    return origin + sourceNoHash + (sourceNoHash.indexOf("?") >= 0 ? "" : baseQuery);
+  }
+
+  const dirBase = basePathOnly.slice(0, basePathOnly.lastIndexOf("/") + 1);
+  if (!origin || !dirBase) {
+    return sourceNoHash;
+  }
+  const relPath = dirBase.slice(origin.length) + sourceNoHash;
+  const normalized = _normalizePath(relPath);
+  return origin + normalized + (sourceNoHash.indexOf("?") >= 0 ? "" : baseQuery);
 }
 
 function _cz_parseVariantPlaylist(text, masterUrl) {
