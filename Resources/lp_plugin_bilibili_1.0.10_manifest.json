@@ -1,0 +1,54 @@
+{
+  "pluginId": "bilibili",
+  "version": "1.0.10",
+  "apiVersion": 1,
+  "displayName": "哔哩哔哩",
+  "platformDescription": "列表返回352、超清直播须在设置扫码",
+  "liveTypes": [
+    "0"
+  ],
+  "entry": "lp_plugin_bilibili_1.0.10_index.js",
+  "preloadScripts": [
+    "fflate_0.8.2_umd.js",
+    "lp_plugin_bilibili_1.0.10_danmaku.js"
+  ],
+  "capabilities": {
+    "categories": {
+      "status": "available"
+    },
+    "rooms": {
+      "status": "available"
+    },
+    "playback": {
+      "status": "available"
+    },
+    "search": {
+      "status": "available"
+    },
+    "roomDetail": {
+      "status": "available"
+    },
+    "liveState": {
+      "status": "available"
+    },
+    "shareResolve": {
+      "status": "available"
+    },
+    "danmaku": {
+      "status": "available",
+      "driver": "plugin_js_v1",
+      "transport": "websocket",
+      "protocolId": "bilibili_ws",
+      "protocolVersion": "1"
+    }
+  },
+  "changelog": [
+    "弹幕解压增加纯 JS fflate 回退，宿主未提供 zlib helper 时仍可解析 B 站压缩包",
+    "弹幕鉴权 uid 改为优先使用登录态 mid，与 Swift 旧版 BiliBiliCookie.uid 行为对齐，缺失时回退 0",
+    "增加弹幕建连调试日志，打印 host_list 首项与最终 transport.url，便于核对 wss_port 是否生效",
+    "弹幕连接优先使用 getDanmuInfo 返回的 wss_port，缺失时再回退默认端口",
+    "弹幕连接计划显式返回 User-Agent/Referer 请求头，连接握手责任收敛到插件侧",
+    "getRoomDetail 添加 platform_cookie authMode 和 buvid Cookie，与 getPlayback 保持一致",
+    "弹幕协议迁移到插件驱动：Bilibili WebSocket 鉴权、心跳与消息解析改为 plugin_js_v1"
+  ]
+}

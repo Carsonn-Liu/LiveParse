@@ -1,20 +1,26 @@
 {
   "apiVersion": 1,
-  "generatedAt": "2026-04-13T05:47:08Z",
+  "generatedAt": "2026-04-16T05:46:09Z",
   "plugins": [
     {
       "pluginId": "bilibili",
-      "version": "1.0.4",
+      "version": "1.0.10",
       "platform": "bilibili",
       "platformName": "哔哩哔哩",
       "zipURLs": [
-        "https://idog.dev/testfiles/liveparse_bilibili_1.0.4.zip"
+        "https://idog.dev/testfiles/liveparse_bilibili_1.0.10.zip"
       ],
-      "zipURL": "https://idog.dev/testfiles/liveparse_bilibili_1.0.4.zip",
-      "sha256": "3b111fcd9e89fc21169357df6f0a1454ee5406cb855682b16a2eb2c167d81a97",
+      "zipURL": "https://idog.dev/testfiles/liveparse_bilibili_1.0.10.zip",
+      "sha256": "a7726ecac451120ced1c439f75aa8609994e6c1c6af8372d093b72b067090451",
       "platformDescription": "列表返回352、超清直播须在设置扫码",
       "changelog": [
-        "getRoomDetail 添加 platform_cookie authMode 和 buvid Cookie，与 getPlayback 保持一致"
+        "弹幕解压增加纯 JS fflate 回退，宿主未提供 zlib helper 时仍可解析 B 站压缩包",
+        "弹幕鉴权 uid 改为优先使用登录态 mid，与 Swift 旧版 BiliBiliCookie.uid 行为对齐，缺失时回退 0",
+        "增加弹幕建连调试日志，打印 host_list 首项与最终 transport.url，便于核对 wss_port 是否生效",
+        "弹幕连接优先使用 getDanmuInfo 返回的 wss_port，缺失时再回退默认端口",
+        "弹幕连接计划显式返回 User-Agent/Referer 请求头，连接握手责任收敛到插件侧",
+        "getRoomDetail 添加 platform_cookie authMode 和 buvid Cookie，与 getPlayback 保持一致",
+        "弹幕协议迁移到插件驱动：Bilibili WebSocket 鉴权、心跳与消息解析改为 plugin_js_v1"
       ],
       "capabilities": {
         "categories": {
@@ -39,7 +45,11 @@
           "status": "available"
         },
         "danmaku": {
-          "status": "available"
+          "status": "available",
+          "driver": "plugin_js_v1",
+          "transport": "websocket",
+          "protocolVersion": "1",
+          "protocolId": "bilibili_ws"
         }
       },
       "icon": "assets/live_card_bilibili.png",
@@ -53,17 +63,18 @@
     },
     {
       "pluginId": "cc",
-      "version": "1.0.0",
+      "version": "1.0.2",
       "platform": "cc",
       "platformName": "网易CC",
       "zipURLs": [
-        "https://idog.dev/testfiles/liveparse_cc_1.0.0.zip"
+        "https://idog.dev/testfiles/liveparse_cc_1.0.2.zip"
       ],
-      "zipURL": "https://idog.dev/testfiles/liveparse_cc_1.0.0.zip",
-      "sha256": "8c4e64a4ea87d3c5be0b8290c93f23673f53d766d2012919a4914bce6a11748f",
+      "zipURL": "https://idog.dev/testfiles/liveparse_cc_1.0.2.zip",
+      "sha256": "a0e3dcd10706a9801e517eb5cd70bc5c47da362ff4e708028658fd11d75d903b",
       "platformDescription": "网易游戏直播",
       "changelog": [
-        "第一次测试"
+        "弹幕连接计划显式返回 User-Agent 请求头，SockJS 握手责任收敛到插件侧",
+        "弹幕协议迁移到插件驱动：CC SockJS 握手、订阅、心跳与消息解析改为 plugin_js_v1"
       ],
       "capabilities": {
         "categories": {
@@ -88,7 +99,11 @@
           "status": "available"
         },
         "danmaku": {
-          "status": "available"
+          "status": "available",
+          "driver": "plugin_js_v1",
+          "transport": "websocket_sockjs",
+          "protocolVersion": "1",
+          "protocolId": "cc_sockjs_json"
         }
       },
       "icon": "assets/live_card_cc.png",
@@ -101,67 +116,19 @@
       "tvosSmallIconDark": "assets/tv_cc_small_dark.png"
     },
     {
-      "pluginId": "chzzk",
-      "version": "1.0.3",
-      "platform": "chzzk",
-      "platformName": "CHZZK",
-      "zipURLs": [
-        "https://idog.dev/testfiles/liveparse_chzzk_1.0.3.zip"
-      ],
-      "zipURL": "https://idog.dev/testfiles/liveparse_chzzk_1.0.3.zip",
-      "sha256": "97d7b1e587f1a60ebf327d0fcb08735e1c64fa2e00dac7e4f13d5f23529b974d",
-      "platformDescription": "NAVER 旗下韩国直播平台",
-      "changelog": [
-        "1.0.3：分类页 getRooms 固定按 50 条抓取，避免宿主 pageSize=20 时 talk 只看到 20 个房间",
-        "1.0.3：保留 1.0.2 的单页请求策略，避免切换分类时后台请求风暴",
-        "1.0.3：保留 1.0.1 的分类接口、图标、英文标题与 cursor 分页修复"
-      ],
-      "capabilities": {
-        "categories": {
-          "status": "available"
-        },
-        "rooms": {
-          "status": "available"
-        },
-        "playback": {
-          "status": "available"
-        },
-        "search": {
-          "status": "available"
-        },
-        "roomDetail": {
-          "status": "available"
-        },
-        "liveState": {
-          "status": "available"
-        },
-        "shareResolve": {
-          "status": "available"
-        }
-      },
-      "icon": "assets/live_card_chzzk.png",
-      "tvosIcon": "assets/live_card_chzzk.png",
-      "iosIcon": "assets/pad_live_card_chzzk.png",
-      "macosIcon": "assets/mini_live_card_chzzk.png",
-      "tvosBigIcon": "assets/tv_chzzk_big.png",
-      "tvosSmallIcon": "assets/tv_chzzk_small.png",
-      "tvosBigIconDark": "assets/tv_chzzk_big_dark.png",
-      "tvosSmallIconDark": "assets/tv_chzzk_small_dark.png"
-    },
-    {
       "pluginId": "douyin",
-      "version": "1.0.9",
+      "version": "1.0.11",
       "platform": "douyin",
       "platformName": "抖音",
       "zipURLs": [
-        "https://idog.dev/testfiles/liveparse_douyin_1.0.9.zip"
+        "https://idog.dev/testfiles/liveparse_douyin_1.0.11.zip"
       ],
-      "zipURL": "https://idog.dev/testfiles/liveparse_douyin_1.0.9.zip",
-      "sha256": "7236cf79e1353d102f6df7935db20a70e3f0e1a1f1f410e07232ef1cbfa8232c",
+      "zipURL": "https://idog.dev/testfiles/liveparse_douyin_1.0.11.zip",
+      "sha256": "5cfbb57d3bea98e3341987627c8a138df0847598d7a7a9e896da7f11124fd4d2",
       "platformDescription": "抖音 - 记录美好生活",
       "changelog": [
-        "修复多机位播放：独立解析每个机位的 stream_info 流地址，不再复用主房间流",
-        "修复多机位 LiveQualityModel 解码失败：补齐 roomId 字段"
+        "弹幕协议继续升级：Douyin protobuf 解析、ack 与心跳迁入 plugin_js_v1 driver",
+        "内置纯 JS gzip 解压库 fflate，移除对宿主 Douyin gzip helper 的硬依赖"
       ],
       "capabilities": {
         "categories": {
@@ -186,7 +153,11 @@
           "status": "available"
         },
         "danmaku": {
-          "status": "available"
+          "status": "available",
+          "driver": "plugin_js_v1",
+          "transport": "websocket",
+          "protocolVersion": "1",
+          "protocolId": "douyin_ws_protobuf"
         }
       },
       "icon": "assets/live_card_douyin.png",
@@ -200,16 +171,18 @@
     },
     {
       "pluginId": "douyu",
-      "version": "1.0.2",
+      "version": "1.0.4",
       "platform": "douyu",
       "platformName": "斗鱼",
       "zipURLs": [
-        "https://idog.dev/testfiles/liveparse_douyu_1.0.2.zip"
+        "https://idog.dev/testfiles/liveparse_douyu_1.0.4.zip"
       ],
-      "zipURL": "https://idog.dev/testfiles/liveparse_douyu_1.0.2.zip",
-      "sha256": "39dacd7144bfd65aed55debf19d44f48093e0dd5ec8891c6bb26bcd3bcae4836",
+      "zipURL": "https://idog.dev/testfiles/liveparse_douyu_1.0.4.zip",
+      "sha256": "25979872fa85724565b73cc6d6ce6861d74bdb4799643f8a21219fdeb6a79fe1",
       "platformDescription": "每个人的直播平台",
       "changelog": [
+        "弹幕连接计划显式返回 User-Agent 请求头，WebSocket 握手责任收敛到插件侧",
+        "1.0.3：弹幕协议迁移到插件驱动，Douyu WebSocket 握手、心跳与 STT 文本解析改为 plugin_js_v1",
         "修复 getRoomDetail 返回 userId 始终为 0 的问题：owner_id 改为 owner_uid"
       ],
       "capabilities": {
@@ -235,7 +208,11 @@
           "status": "available"
         },
         "danmaku": {
-          "status": "available"
+          "status": "available",
+          "driver": "plugin_js_v1",
+          "transport": "websocket",
+          "protocolVersion": "1",
+          "protocolId": "douyu_ws_stt"
         }
       },
       "icon": "assets/live_card_douyu.png",
@@ -249,17 +226,19 @@
     },
     {
       "pluginId": "huya",
-      "version": "1.0.1",
+      "version": "1.0.4",
       "platform": "huya",
       "platformName": "虎牙",
       "zipURLs": [
-        "https://idog.dev/testfiles/liveparse_huya_1.0.1.zip"
+        "https://idog.dev/testfiles/liveparse_huya_1.0.4.zip"
       ],
-      "zipURL": "https://idog.dev/testfiles/liveparse_huya_1.0.1.zip",
-      "sha256": "d105a2ee6e6d746d696e7cda04794959033aad662f10ec93f843426d2610fca4",
+      "zipURL": "https://idog.dev/testfiles/liveparse_huya_1.0.4.zip",
+      "sha256": "043d701732e4ae45558571025304ede1bf3b263336fedbc7edc20baca5bb8285",
       "platformDescription": "竞技由我，玩在虎牙",
       "changelog": [
-        "第一次测试"
+        "弹幕连接计划显式返回 User-Agent 请求头，匿名入组连接责任收敛到插件侧",
+        "弹幕能力状态收尾：Huya plugin_js_v1 驱动改标为 available，沿用现有 huya.js 解析与匿名入组握手",
+        "保留原有直播列表、搜索、房间详情、直播状态、分享解析与播放能力"
       ],
       "capabilities": {
         "categories": {
@@ -284,7 +263,11 @@
           "status": "available"
         },
         "danmaku": {
-          "status": "available"
+          "status": "available",
+          "driver": "plugin_js_v1",
+          "transport": "websocket",
+          "protocolVersion": "1",
+          "protocolId": "huya_ws_jce"
         }
       },
       "icon": "assets/live_card_huya.png",
@@ -297,106 +280,19 @@
       "tvosSmallIconDark": "assets/tv_huya_small_dark.png"
     },
     {
-      "pluginId": "kick",
-      "version": "1.0.22",
-      "platform": "kick",
-      "platformName": "Kick",
-      "zipURLs": [
-        "https://idog.dev/testfiles/liveparse_kick_1.0.22.zip"
-      ],
-      "zipURL": "https://idog.dev/testfiles/liveparse_kick_1.0.22.zip",
-      "sha256": "83fe8f82671bb5b540c693a3459d59def3d503e404e8be28353b982f90c396ad",
-      "platformDescription": "海外互动直播平台（支持应用内登录会话）",
-      "changelog": [
-        "改为通过内置 Worker 获取 Kick 官方 app token，插件不再需要直接持有 client_secret",
-        "getCategories/getRooms 默认优先走 Kick 官方 API，官方链路失败时再回退当前网页接口",
-        "新增共享 Worker 脚本，可同时为 Twitch 和 Kick 提供 app token 路由",
-        "修复顶级分类分页：getRooms 不再对已按 page 拉取的一页结果做本地二次切页，恢复继续下滑加载",
-        "修复 getCategories 解码失败：恢复宿主要求的 root + subList 结构，同时仍只暴露稳定可用的顶级分类",
-        "移除不稳定的 Kick 子分类树，分类页改为仅返回可稳定抓取房间的顶级分类",
-        "getRooms 不再请求 category/{slug} 的网页 RSC 链路，子分类参数统一降级到父分类顶级流列表",
-        "分类入口收敛为 games/irl/music/gambling/creative，避免 slots 等子分类在宿主内直接报错",
-        "子分类房间改为直接请求 kick.com/category/{slug}?_rsc=... 的独立列表，不再抓父分类全量流后本地过滤",
-        "适配 Kick category 页 text/x-component 响应，从 RSC 数据中提取真实 livestreams 列表",
-        "修复子分类 RSC 项用户信息合并：补齐 username/slug/profile_pic，避免房间卡片昵称头像缺失",
-        "移除 getRooms 的 category 网页解析残留代码，房间抓取统一只走 subcategories 与 stream/livestreams",
-        "分类树仅负责导航展示，不再保留 kick.com/category/... 的旧兜底链路",
-        "getCategories 改为两层分类树：按 IRL/Games/Music/Gambling/Creative 分组展示子分类",
-        "getRooms 正式接入 parentId：子分类直接使用父分类流列表，不再每次重新猜测所属大类",
-        "修复 stream/livestreams 响应合并：当返回同时带 channel 和顶层直播字段时，不再丢失 session_title/tags/category/thumbnail",
-        "游戏等子分类房间匹配恢复可用，避免顶层直播信息被覆盖后精确过滤始终失败",
-        "顶级分类房间不再对已带 category 参数的列表做本地二次过滤，避免 irl/music 等结果被误清空",
-        "分类匹配补充 tags 字段解析，子分类在缺少 category 对象时仍可按 slug 命中",
-        "getRooms 改为优先使用 stream/livestreams 的 category 参数，不再依赖分类页 HTML 解析",
-        "子分类房间会先解析父分类再拉取对应流列表，并按子分类 slug 精确过滤",
-        "getRooms(分类页) 改为直接请求 kick.com/category/{slug}，不再误用全站 stream/livestreams 列表",
-        "分类房间从页面真实 HTML/Next 数据提取直播卡片，避免 id=irl 等场景被本地二次分类过滤为空",
-        "适配 kick.com/stream/livestreams 返回结构：识别顶层 session_title/is_live/viewer_count/category 字段",
-        "修复 getRooms 空列表：接口已有直播数据时不再因本地 liveState/封面/用户字段解析失败被全部过滤",
-        "getCategories 改为使用 KickApi 仓库同路线接口：kick.com/api/v1/subcategories",
-        "频道基础信息改为使用 KickApi 仓库同路线接口：kick.com/api/v1/channels/{slug}",
-        "getCategories 改为直接解析 https://kick.com/browse/categories 页面，不再请求 private 分类接口",
-        "分类数据源与网页真实展示保持一致，便于直接对照页面内容排查问题",
-        "移除 categories/rooms/search/detail/playback 的多端点兜底、缓存与静态 fallback，统一只依赖真实接口响应",
-        "getRooms 改为直接请求带登录态的 stream/livestreams 接口，不再先探测 private 列表接口",
-        "search/getCategories/getRoomDetail/getPlayback 统一收敛到单一真实接口，空数据和异常更易复现定位",
-        "修复聚合分类过滤：games/recommended 等分组不再错误参与真实分类精确匹配",
-        "修复 getRooms 空列表：当 Kick 返回聚合流列表时不再被本地分类过滤全部丢弃",
-        "修复列表登录态：getRooms/search/getCategories 改为优先透传宿主 Kick cookie",
-        "兼容已登录 App 场景：列表接口不再以匿名请求导致空数组",
-        "接入 Kick 应用内登录会话：新增 setCookie/clearCookie 兼容入口并维护运行时 cookie",
-        "getPlayback/getRoomDetail/getLiveState/resolveShare 改为优先使用宿主 Kick 登录态",
-        "播放链路补齐登录态透传：签名地址探测、m3u8 预检与质量解析均可复用会话"
-      ],
-      "capabilities": {
-        "categories": {
-          "status": "available"
-        },
-        "rooms": {
-          "status": "available"
-        },
-        "playback": {
-          "status": "partial",
-          "reason": "部分直播流需要登录态或授权播放 token，受风控时仍可能返回 403"
-        },
-        "search": {
-          "status": "available"
-        },
-        "roomDetail": {
-          "status": "available"
-        },
-        "liveState": {
-          "status": "available"
-        },
-        "shareResolve": {
-          "status": "available"
-        },
-        "danmaku": {
-          "status": "unavailable"
-        }
-      },
-      "icon": "assets/live_card_kick.png",
-      "tvosIcon": "assets/live_card_kick.png",
-      "iosIcon": "assets/pad_live_card_kick.png",
-      "macosIcon": "assets/mini_live_card_kick.png",
-      "tvosBigIcon": "assets/tv_kick_big.png",
-      "tvosSmallIcon": "assets/tv_kick_small.png",
-      "tvosBigIconDark": "assets/tv_kick_big_dark.png",
-      "tvosSmallIconDark": "assets/tv_kick_small_dark.png"
-    },
-    {
       "pluginId": "ks",
-      "version": "1.0.6",
+      "version": "1.0.7",
       "platform": "ks",
       "platformName": "快手",
       "zipURLs": [
-        "https://idog.dev/testfiles/liveparse_ks_1.0.6.zip"
+        "https://idog.dev/testfiles/liveparse_ks_1.0.7.zip"
       ],
-      "zipURL": "https://idog.dev/testfiles/liveparse_ks_1.0.6.zip",
-      "sha256": "70a186130403f2dc6466cbd4bcbbf83a846f583454df1ea62a4cd59c0de35b9e",
+      "zipURL": "https://idog.dev/testfiles/liveparse_ks_1.0.7.zip",
+      "sha256": "8b93af8b6ce8854eb393f54db10373caf07158d9da76cee2f0629bfcf30d016c",
       "platformDescription": "自生成指纹 cookie + 宿主登录态双通道",
       "changelog": [
-        "恢复 platform_cookie 宿主登录态，与自生成 kwfv1/kwscode 双通道合并发送"
+        "恢复 platform_cookie 宿主登录态，与自生成 kwfv1/kwscode 双通道合并发送",
+        "弹幕协议迁移到插件驱动：快手 recall 轮询、cursor 推进与消息解析改为 plugin_js_v1"
       ],
       "capabilities": {
         "categories": {
@@ -421,7 +317,11 @@
           "status": "available"
         },
         "danmaku": {
-          "status": "available"
+          "status": "available",
+          "driver": "plugin_js_v1",
+          "transport": "http_polling",
+          "protocolVersion": "1",
+          "protocolId": "ks_recall_json"
         }
       },
       "icon": "assets/live_card_ks.png",
@@ -435,17 +335,18 @@
     },
     {
       "pluginId": "panda",
-      "version": "1.0.1",
+      "version": "1.0.3",
       "platform": "panda",
       "platformName": "PandaTV",
       "zipURLs": [
-        "https://idog.dev/testfiles/liveparse_panda_1.0.1.zip"
+        "https://idog.dev/testfiles/liveparse_panda_1.0.3.zip"
       ],
-      "zipURL": "https://idog.dev/testfiles/liveparse_panda_1.0.1.zip",
-      "sha256": "419d39974eae42d044029dfd0f8a880d7b18f8e3f1f29f4c5a49c673f99f55f0",
+      "zipURL": "https://idog.dev/testfiles/liveparse_panda_1.0.3.zip",
+      "sha256": "c0c54fec5a6e5779d9d1381efad3c33bd69b5830d2db48e82089e1f1a5e273db",
       "platformDescription": "韩国直播平台 팬더티비",
       "changelog": [
-        "新增 PandaTV(pandalive.co.kr) 插件：支持直播列表、主播搜索、房间详情、直播状态、分享解析和 HLS 播放"
+        "弹幕能力状态收尾：PandaTV Centrifuge plugin_js_v1 驱动改标为 available",
+        "保留原有直播列表、主播搜索、房间详情、直播状态、分享解析与 HLS 播放能力"
       ],
       "capabilities": {
         "categories": {
@@ -473,8 +374,11 @@
           "status": "available"
         },
         "danmaku": {
-          "status": "partial",
-          "reason": "已实现 Centrifuge WebSocket 连接，消息字段按平台 JSON 载荷解析"
+          "status": "available",
+          "driver": "plugin_js_v1",
+          "transport": "websocket",
+          "protocolVersion": "1",
+          "protocolId": "panda_centrifuge_json"
         }
       },
       "icon": "assets/live_card_panda.png",
@@ -488,18 +392,19 @@
     },
     {
       "pluginId": "soop",
-      "version": "1.0.4",
+      "version": "1.0.6",
       "platform": "soop",
       "platformName": "SOOP",
       "zipURLs": [
-        "https://idog.dev/testfiles/liveparse_soop_1.0.4.zip"
+        "https://idog.dev/testfiles/liveparse_soop_1.0.6.zip"
       ],
-      "zipURL": "https://idog.dev/testfiles/liveparse_soop_1.0.4.zip",
-      "sha256": "33350326ee87a003fb37587b51a81abf51e600d2a7a61e1f7ca36453c592805a",
+      "zipURL": "https://idog.dev/testfiles/liveparse_soop_1.0.6.zip",
+      "sha256": "bd3f84cd5a59bdd036f32a652661c24fa41febb7051cdbf01cd9863187dba38e",
       "platformDescription": "韩国直播平台(原AfreecaTV)",
       "changelog": [
-        "补齐详情/状态登录态：getRoomDetail 与 getLiveState 改为统一走 platform_cookie",
-        "优化分享解析登录态：resolveShare 复用 getRoomDetail 的宿主 Cookie 路径"
+        "弹幕连接计划显式返回 User-Agent 请求头，并继续透传运行时 Cookie",
+        "弹幕协议迁移到插件驱动：SOOP WebSocket CONNECT、JOIN、PING 与文本消息解析改为 plugin_js_v1",
+        "保留运行时 Cookie 透传，继续兼容 chat 子协议与原有房间/播放解析能力"
       ],
       "capabilities": {
         "categories": {
@@ -525,7 +430,11 @@
           "status": "available"
         },
         "danmaku": {
-          "status": "available"
+          "status": "available",
+          "driver": "plugin_js_v1",
+          "transport": "websocket",
+          "protocolVersion": "1",
+          "protocolId": "soop_ws_text"
         }
       },
       "icon": "assets/live_card_soop.png",
@@ -539,16 +448,18 @@
     },
     {
       "pluginId": "twitch",
-      "version": "1.0.31",
+      "version": "1.0.33",
       "platform": "twitch",
       "platformName": "Twitch",
       "zipURLs": [
-        "https://idog.dev/testfiles/liveparse_twitch_1.0.31.zip"
+        "https://idog.dev/testfiles/liveparse_twitch_1.0.33.zip"
       ],
-      "zipURL": "https://idog.dev/testfiles/liveparse_twitch_1.0.31.zip",
-      "sha256": "f11323c0a563e1ccec9764a824a4e193aaf86db9a4d7984df0c7d0e387a9af15",
+      "zipURL": "https://idog.dev/testfiles/liveparse_twitch_1.0.33.zip",
+      "sha256": "1410c4ee24b58c222b09ce5a4ccf3a5b0afa50e9efcb272eac5810b096bbbaa7",
       "platformDescription": "全球游戏直播平台",
       "changelog": [
+        "弹幕连接计划显式返回 User-Agent 请求头，IRC WebSocket 握手责任收敛到插件侧",
+        "1.0.32：弹幕协议迁移到插件驱动，Twitch IRC WebSocket 握手、PING/PONG 与 PRIVMSG 解析改为 plugin_js_v1",
         "Align Twitch playback closer to Streamlink by preferring embed playerType first and falling back to site on retry",
         "Switch Twitch usher playback URLs to the v2 channel endpoint and add Streamlink-style platform and random p query params",
         "Prefer platform_cookie when fetching Twitch playback GQL tokens so playback uses the logged-in token path instead of anonymous ad-prone tokens",
@@ -599,7 +510,11 @@
           "status": "available"
         },
         "danmaku": {
-          "status": "available"
+          "status": "available",
+          "driver": "plugin_js_v1",
+          "transport": "websocket",
+          "protocolVersion": "1",
+          "protocolId": "twitch_irc_text"
         }
       },
       "icon": "assets/live_card_twitch.png",
@@ -612,75 +527,21 @@
       "tvosSmallIconDark": "assets/tv_twitch_small_dark.png"
     },
     {
-      "pluginId": "xiaohongshu",
-      "version": "1.0.6",
-      "platform": "xiaohongshu",
-      "platformName": "小红书",
-      "zipURLs": [
-        "https://idog.dev/testfiles/liveparse_xiaohongshu_1.0.6.zip"
-      ],
-      "zipURL": "https://idog.dev/testfiles/liveparse_xiaohongshu_1.0.6.zip",
-      "sha256": "14355932d3f193fa101f61bbf7dfe383c9ad726801c57aea9d5b5eb4fed2d91d",
-      "platformDescription": "小红书直播（登录后可用）",
-      "changelog": [
-        "1.0.6：修正 liveState 映射；playback 优先取 quality_type_name；capabilities 完善功能状态描述"
-      ],
-      "capabilities": {
-        "categories": {
-          "status": "partial",
-          "reason": "登录后可用"
-        },
-        "rooms": {
-          "status": "partial",
-          "reason": "登录后可用"
-        },
-        "playback": {
-          "status": "partial",
-          "reason": "登录后可用"
-        },
-        "search": {
-          "status": "unavailable"
-        },
-        "roomDetail": {
-          "status": "partial",
-          "reason": "登录后可用"
-        },
-        "liveState": {
-          "status": "partial",
-          "reason": "登录后可用"
-        },
-        "shareResolve": {
-          "status": "partial",
-          "reason": "登录后可用"
-        },
-        "danmaku": {
-          "status": "unavailable"
-        }
-      },
-      "icon": "assets/live_card_xiaohongshu.png",
-      "tvosIcon": "assets/live_card_xiaohongshu.png",
-      "iosIcon": "assets/pad_live_card_xiaohongshu.png",
-      "macosIcon": "assets/mini_live_card_xiaohongshu.png",
-      "tvosBigIcon": "assets/tv_xiaohongshu_big.png",
-      "tvosSmallIcon": "assets/tv_xiaohongshu_small.png",
-      "tvosBigIconDark": "assets/tv_xiaohongshu_big_dark.png",
-      "tvosSmallIconDark": "assets/tv_xiaohongshu_small_dark.png"
-    },
-    {
       "pluginId": "youtube",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "platform": "youtube",
       "platformName": "YouTube",
       "zipURLs": [
-        "https://idog.dev/testfiles/liveparse_youtube_1.1.0.zip"
+        "https://idog.dev/testfiles/liveparse_youtube_1.1.1.zip"
       ],
-      "zipURL": "https://idog.dev/testfiles/liveparse_youtube_1.1.0.zip",
-      "sha256": "053115177a563bf06c269a1cf062d6b86caac2c21f6db7666f6dd2827f6a8a8d",
+      "zipURL": "https://idog.dev/testfiles/liveparse_youtube_1.1.1.zip",
+      "sha256": "098876d208d14df7f1624e5071efb5558980ee3d2b8e9945aa0262c7079b9e4d",
       "platformDescription": "全球视频平台直播",
       "changelog": [
         "完整覆盖研究版 YouTube 播放链路：watch 初始响应 + youtubei 多端 player 统一收集 manifest",
         "按真实清晰度梯子评分选源，默认输出从高画质到低画质排序的质量列表",
-        "demuxed manifest 保留清晰度标签并回退 master playUrl，避免只拿到无声音视频子流"
+        "demuxed manifest 保留清晰度标签并回退 master playUrl，避免只拿到无声音视频子流",
+        "弹幕协议迁移到插件驱动：YouTube live chat 轮询、continuation 推进与消息解析改为 plugin_js_v1"
       ],
       "capabilities": {
         "categories": {
@@ -705,7 +566,11 @@
           "status": "available"
         },
         "danmaku": {
-          "status": "available"
+          "status": "available",
+          "driver": "plugin_js_v1",
+          "transport": "http_polling",
+          "protocolVersion": "1",
+          "protocolId": "youtube_live_chat_json"
         }
       },
       "icon": "assets/live_card_youtube.png",
@@ -719,14 +584,14 @@
     },
     {
       "pluginId": "yy",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "platform": "yy",
       "platformName": "YY直播",
       "zipURLs": [
-        "https://idog.dev/testfiles/liveparse_yy_1.0.1.zip"
+        "https://idog.dev/testfiles/liveparse_yy_1.0.2.zip"
       ],
-      "zipURL": "https://idog.dev/testfiles/liveparse_yy_1.0.1.zip",
-      "sha256": "bd62fafb2e66059d5c111d4ba92de8eef209dd2c2cf9a790b5784a59d3b17d3e",
+      "zipURL": "https://idog.dev/testfiles/liveparse_yy_1.0.2.zip",
+      "sha256": "9137321014d88f4a477dd6046d0cf3c5c89712f9418431af4ce596750498af07",
       "platformDescription": "全民娱乐的互动直播平台",
       "changelog": [
         "第一次测试"
@@ -754,7 +619,11 @@
           "status": "available"
         },
         "danmaku": {
-          "status": "available"
+          "status": "available",
+          "driver": "plugin_js_v1",
+          "transport": "websocket",
+          "protocolVersion": "1",
+          "protocolId": "yy_ws_binary"
         }
       },
       "icon": "assets/live_card_yy.png",
