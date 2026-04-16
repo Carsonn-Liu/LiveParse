@@ -1,13 +1,13 @@
 {
   "pluginId": "chzzk",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "apiVersion": 1,
   "displayName": "CHZZK",
   "platformDescription": "NAVER 旗下韩国直播平台",
   "liveTypes": [
     "13"
   ],
-  "entry": "lp_plugin_chzzk_1.0.3_index.js",
+  "entry": "lp_plugin_chzzk_1.0.5_index.js",
   "preloadScripts": [],
   "capabilities": {
     "categories": {
@@ -36,8 +36,9 @@
     }
   },
   "changelog": [
-    "1.0.3：分类页 getRooms 固定按 50 条抓取，避免宿主 pageSize=20 时 talk 只看到 20 个房间",
-    "1.0.3：保留 1.0.2 的单页请求策略，避免切换分类时后台请求风暴",
-    "1.0.3：保留 1.0.1 的分类接口、图标、英文标题与 cursor 分页修复"
+    "1.0.5：播放地址解析不再依赖 URL 构造器，兼容移动端 JS 引擎缺少 URL 时的相对路径转绝对路径",
+    "1.0.5：修复 getPlayback 在部分设备仍返回 1080p/720p 相对路径导致无法播放的问题",
+    "1.0.4：播放地址优先将 encodingTrack 相对路径解析为基于 media.path 的绝对 HLS URL，修复移动端拿到相对路径无法播放的问题",
+    "1.0.4：track.path 缺失时继续解析 master playlist，返回真实分档地址而非复用同一个自适应入口"
   ]
 }

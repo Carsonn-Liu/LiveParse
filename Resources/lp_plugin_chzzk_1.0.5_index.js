@@ -335,7 +335,172 @@ function _cz_qualityLabel(track) {
   return height > 0 ? `${height}p` : "原画";
 }
 
-function _cz_buildPlayback(playbackJson, roomId) {
+function _cz_parseM3U8Attributes(line) {
+  const source = _cz_str(line).replace(/^#EXT-X-STREAM-INF:/i, "");
+  const attrs = {};
+  const re = /([A-Z0-9-]+)=("(?:[^"\\]|\\.)*"|[^,]+)/gi;
+  let match = re.exec(source);
+  while (match) {
+    const key = _cz_str(match[1]).toUpperCase();
+    let value = _cz_str(match[2]).trim();
+    if (value.startsWith("\"") && value.endsWith("\"")) {
+      value = value.slice(1, -1);
+    }
+    attrs[key] = value;
+    match = re.exec(source);
+  }
+  return attrs;
+}
+
+function _cz_resolveM3U8URL(url, baseUrl) {
+  const source = _cz_str(url).trim();
+  const base = _cz_str(baseUrl).trim();
+  if (!source) return "";
+  if (/^[a-z][a-z0-9+.-]*:/i.test(source)) return source;
+  if (!base) return source;
+
+  // Keep the URL-constructor path when available, and fall back to manual
+  // resolution for runtimes where URL is missing (some mobile JS engines).
+  if (typeof URL === "function") {
+    try {
+      const resolved = new URL(source, base);
+      if (!/^[a-z][a-z0-9+.-]*:/i.test(source)) {
+        const baseQuery = new URL(base).search;
+        if (baseQuery && !resolved.search) {
+          resolved.search = baseQuery;
+        }
+      }
+      return resolved.toString();
+    } catch (_) {}
+  }
+
+  const baseNoHash = base.split("#")[0];
+  const baseQueryIndex = baseNoHash.indexOf("?");
+  const basePathOnly = baseQueryIndex >= 0 ? baseNoHash.slice(0, baseQueryIndex) : baseNoHash;
+  const baseQuery = baseQueryIndex >= 0 ? baseNoHash.slice(baseQueryIndex) : "";
+  const originMatch = basePathOnly.match(/^([a-z][a-z0-9+.-]*:\/\/[^\/?#]+)/i);
+  const origin = originMatch ? originMatch[1] : "";
+  const sourceNoHash = source.split("#")[0];
+
+  function _normalizePath(path) {
+    const parts = path.split("/");
+    const stack = [];
+    for (const part of parts) {
+      if (!part || part === ".") continue;
+      if (part === "..") {
+        if (stack.length > 0) stack.pop();
+        continue;
+      }
+      stack.push(part);
+    }
+    return "/" + stack.join("/");
+  }
+
+  if (source.startsWith("//")) {
+    const schemeMatch = basePathOnly.match(/^([a-z][a-z0-9+.-]*:)/i);
+    const scheme = schemeMatch ? schemeMatch[1] : "https:";
+    return scheme + source;
+  }
+
+  if (source.startsWith("/")) {
+    if (!origin) return source;
+    return origin + sourceNoHash + (sourceNoHash.indexOf("?") >= 0 ? "" : baseQuery);
+  }
+
+  const dirBase = basePathOnly.slice(0, basePathOnly.lastIndexOf("/") + 1);
+  if (!origin || !dirBase) {
+    return sourceNoHash;
+  }
+  const relPath = dirBase.slice(origin.length) + sourceNoHash;
+  const normalized = _normalizePath(relPath);
+  return origin + normalized + (sourceNoHash.indexOf("?") >= 0 ? "" : baseQuery);
+}
+
+function _cz_parseVariantPlaylist(text, masterUrl) {
+  const lines = _cz_str(text)
+    .split(/\r?\n/)
+    .map(function (line) {
+      return _cz_str(line).trim();
+    })
+    .filter(function (line) {
+      return !!line;
+    });
+
+  const variants = [];
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (!line.startsWith("#EXT-X-STREAM-INF:")) continue;
+    const attrs = _cz_parseM3U8Attributes(line);
+    const url = _cz_resolveM3U8URL(lines[i + 1], masterUrl);
+    if (!url || url.startsWith("#")) continue;
+
+    const resolution = _cz_str(attrs.RESOLUTION).match(/(\d+)x(\d+)/i);
+    const height = resolution ? _cz_int(resolution[2], 0) : 0;
+    const width = resolution ? _cz_int(resolution[1], 0) : 0;
+    const bandwidth = _cz_int(attrs.BANDWIDTH || attrs["AVERAGE-BANDWIDTH"], 0);
+
+    variants.push({
+      url: url,
+      width: width,
+      height: height,
+      bandwidth: bandwidth,
+      title: _cz_str(attrs.NAME || attrs.RESOLUTION || (height > 0 ? `${height}p` : ""))
+    });
+  }
+
+  variants.sort(function (a, b) {
+    const byHeight = _cz_int(b && b.height, 0) - _cz_int(a && a.height, 0);
+    if (byHeight !== 0) return byHeight;
+    return _cz_int(b && b.bandwidth, 0) - _cz_int(a && a.bandwidth, 0);
+  });
+  return variants;
+}
+
+function _cz_playbackHeaders() {
+  return {
+    "User-Agent": _cz_playbackUserAgent,
+    Referer: "https://chzzk.naver.com/",
+    Origin: "https://chzzk.naver.com"
+  };
+}
+
+function _cz_buildPlaybackItem(roomId, title, qn, url) {
+  return {
+    roomId: _cz_str(roomId),
+    title: _cz_str(title),
+    qn: _cz_int(qn, 0),
+    url: _cz_str(url),
+    liveCodeType: "m3u8",
+    liveType: _cz_liveType,
+    userAgent: _cz_playbackUserAgent,
+    headers: _cz_playbackHeaders()
+  };
+}
+
+function _cz_pickVariantForTrack(track, variants) {
+  if (!Array.isArray(variants) || variants.length < 1 || (track && track.audioOnly)) return null;
+
+  const height = _cz_qualityValue(track);
+  if (height > 0) {
+    for (const variant of variants) {
+      if (_cz_int(variant && variant.height, 0) === height) {
+        return variant;
+      }
+    }
+  }
+
+  const label = _cz_qualityLabel(track).toLowerCase();
+  for (const variant of variants) {
+    const title = _cz_str(variant && variant.title).toLowerCase();
+    if (title && label && title.indexOf(label) >= 0) {
+      return variant;
+    }
+  }
+
+  return null;
+}
+
+function _cz_buildPlaybackFromVariants(playbackJson, roomId, variantMap) {
   const playback = typeof playbackJson === "string" ? _cz_parseJSON(playbackJson, null) : playbackJson;
   const mediaList = playback && Array.isArray(playback.media) ? playback.media : [];
   if (mediaList.length < 1) {
@@ -350,23 +515,22 @@ function _cz_buildPlayback(playbackJson, roomId) {
     });
 
     const items = [];
+    const seen = {};
+    const mediaPath = _cz_str(media && media.path);
+    const variants = variantMap && mediaPath ? variantMap[mediaPath] : null;
     for (const track of tracks) {
-      const path = _cz_str(track && track.path) || _cz_str(media && media.path);
+      const directPath = _cz_resolveM3U8URL(_cz_str(track && track.path), mediaPath);
+      const variant = directPath ? null : _cz_pickVariantForTrack(track, variants);
+      const path = directPath || _cz_str(variant && variant.url);
       if (!path) continue;
-      items.push({
-        roomId: _cz_str(roomId),
-        title: _cz_qualityLabel(track),
-        qn: _cz_qualityValue(track),
-        url: path,
-        liveCodeType: "m3u8",
-        liveType: _cz_liveType,
-        userAgent: _cz_playbackUserAgent,
-        headers: {
-          "User-Agent": _cz_playbackUserAgent,
-          Referer: "https://chzzk.naver.com/",
-          Origin: "https://chzzk.naver.com"
-        }
-      });
+      const dedupeKey = `${_cz_qualityLabel(track)}|${path}`;
+      if (seen[dedupeKey]) continue;
+      seen[dedupeKey] = true;
+      items.push(_cz_buildPlaybackItem(roomId, _cz_qualityLabel(track), _cz_qualityValue(track), path));
+    }
+
+    if (items.length < 1 && mediaPath) {
+      items.push(_cz_buildPlaybackItem(roomId, "Auto", 0, mediaPath));
     }
 
     if (items.length > 0) {
@@ -381,6 +545,47 @@ function _cz_buildPlayback(playbackJson, roomId) {
     _cz_throw("INVALID_RESPONSE", "chzzk playback list empty", { roomId: _cz_str(roomId) });
   }
   return groups;
+}
+
+async function _cz_fetchVariantPlaylist(url, payload) {
+  const resp = await _cz_request({
+    url: url,
+    headers: Object.assign({
+      Accept: "application/vnd.apple.mpegurl, application/x-mpegURL, text/plain, */*"
+    }, _cz_playbackHeaders())
+  }, payload);
+  _cz_ensureStatus(resp, { url: url });
+  return _cz_str(resp && resp.bodyText);
+}
+
+async function _cz_collectVariantMap(playbackJson, payload) {
+  const playback = typeof playbackJson === "string" ? _cz_parseJSON(playbackJson, null) : playbackJson;
+  const mediaList = playback && Array.isArray(playback.media) ? playback.media : [];
+  const variantMap = {};
+
+  for (const media of mediaList) {
+    const mediaPath = _cz_str(media && media.path);
+    const tracks = Array.isArray(media && media.encodingTrack) ? media.encodingTrack : [];
+    const needsVariantParse = !!mediaPath && tracks.some(function (track) {
+      return !_cz_str(track && track.path);
+    });
+    if (!needsVariantParse || variantMap[mediaPath]) continue;
+
+    try {
+      const bodyText = await _cz_fetchVariantPlaylist(mediaPath, payload);
+      const variants = _cz_parseVariantPlaylist(bodyText, mediaPath);
+      if (variants.length > 0) {
+        variantMap[mediaPath] = variants;
+      }
+    } catch (_) {}
+  }
+
+  return variantMap;
+}
+
+async function _cz_buildPlayback(playbackJson, roomId, payload) {
+  const variantMap = await _cz_collectVariantMap(playbackJson, payload);
+  return _cz_buildPlaybackFromVariants(playbackJson, roomId, variantMap);
 }
 
 async function _cz_fetchCategories(payload) {
@@ -611,7 +816,7 @@ globalThis.LiveParsePlugin = {
     if (_cz_liveStateFromStatus(detail && detail.status) !== "1") {
       _cz_throw("NOT_LIVE", "channel is not live", { roomId: roomId });
     }
-    return _cz_buildPlayback(detail && detail.livePlaybackJson, roomId);
+    return await _cz_buildPlayback(detail && detail.livePlaybackJson, roomId, runtimePayload);
   },
 
   async search(payload) {
@@ -678,3 +883,11 @@ globalThis.LiveParsePlugin = {
     };
   }
 };
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = {
+    _cz_parseVariantPlaylist: _cz_parseVariantPlaylist,
+    _cz_buildPlaybackFromVariants: _cz_buildPlaybackFromVariants,
+    _cz_buildPlayback: _cz_buildPlayback
+  };
+}
