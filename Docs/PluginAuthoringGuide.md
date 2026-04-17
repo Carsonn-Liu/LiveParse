@@ -3,6 +3,10 @@
 本文面向贡献者：当你要为 LiveParse 新增一个平台插件时，按这里的规范落地即可。
 
 > 当前仓库为纯 JS 插件模式：平台解析逻辑在 JS。若接入新弹幕驱动，宿主只保留 transport，协议解析也放在插件里。
+>
+> 如果你现在要写“弹幕获取 + 协议解析”这条链路，优先继续看：`Docs/DanmakuPluginAuthoringGuide.md`
+>
+> 如果你在做“登录凭证 / signing / 通用工具沉淀”这类高级能力规划，继续看：`Docs/PluginAdvancedCapabilitiesPlan.md`
 
 ## 1. 先确定插件标识与版本
 
@@ -274,7 +278,7 @@ globalThis.LiveParsePlugin = {
 - `onDanmakuTick`：生成心跳或轮询请求
 - `destroyDanmakuSession`：释放按 `connectionId` 保存的 session 状态
 
-完整字段定义、轮询模型和 fallback 约束见 `Docs/DanmakuDriverAPI.md`。
+完整字段定义、轮询模型和 fallback 约束见 `Docs/DanmakuDriverAPI.md`。如果需要从零开始照着做一遍，继续看 `Docs/DanmakuPluginAuthoringGuide.md`。
 
 ## 5. Host 能力使用规范
 
@@ -355,6 +359,8 @@ await Host.http.request({
 - 需要请求签名的平台（如小红书），使用 `signing` 字段，与 `cookieInject` 互不干扰。
 - 插件内部不要把敏感 token/cookie 写入仓库。
 
+如需继续设计统一的登录凭证管理、凭证过期判断和 signing/profile 边界，参考：`Docs/PluginAdvancedCapabilitiesPlan.md`
+
 ## 7. 新增“官方平台”还需要做什么
 
 如果你要把新平台作为官方内置平台，而非仅实验插件，还需要：
@@ -363,7 +369,7 @@ await Host.http.request({
 2. 仅当该平台需要纳入“官方平台图标完整性校验”时，再把 `pluginId` 加入 `Scripts/build_plugin_release.py` 的 `OFFICIAL_PLUGIN_IDS`。
 3. 不需要再修改平台名称映射表；平台展示名与描述统一以 manifest 中的 `displayName` / `platformDescription` 为准。
 4. 补充平台测试（至少 `PluginSystemTests` + 该平台测试）。
-5. 若支持实时弹幕协议，按需扩展 `WebSocketConnection` / `HTTPPollingDanmakuConnection` 对应解析逻辑。
+5. 若支持实时弹幕协议，在插件内实现 `plugin_js_v1` driver（`getDanmaku` + 生命周期方法），不要再新增宿主侧平台解析逻辑；实战步骤见 `Docs/DanmakuPluginAuthoringGuide.md`。
 
 ## 8. 发布脚本默认行为
 
@@ -387,3 +393,5 @@ await Host.http.request({
 
 - `Docs/PluginReleaseUsage.md`
 - `Docs/PluginSystem.md`
+- `Docs/DanmakuPluginAuthoringGuide.md`
+- `Docs/PluginAdvancedCapabilitiesPlan.md`
