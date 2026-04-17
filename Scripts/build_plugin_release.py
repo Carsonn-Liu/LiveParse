@@ -147,6 +147,20 @@ def normalize_capabilities(raw: Any) -> dict[str, dict[str, str]]:
     if not isinstance(raw, dict):
         return {}
 
+    status_aliases = {
+        "available": "available",
+        "partial": "partial",
+        "unavailable": "unavailable",
+        "not_supported": "unavailable",
+        "unsupported": "unavailable",
+    }
+    passthrough_keys = {
+        "driver",
+        "transport",
+        "protocolId",
+        "protocolVersion",
+        "hostMinVersion",
+    }
     normalized: dict[str, dict[str, str]] = {}
     for feature, value in raw.items():
         if not isinstance(feature, str):
@@ -167,12 +181,20 @@ def normalize_capabilities(raw: Any) -> dict[str, dict[str, str]]:
             if isinstance(raw_reason, str):
                 reason = raw_reason.strip()
 
-        if status not in {"available", "partial", "unavailable"}:
+        status = status_aliases.get(status, "")
+        if not status:
             continue
 
         entry: dict[str, str] = {"status": status}
         if status == "partial" and reason:
             entry["reason"] = reason
+        if isinstance(value, dict):
+            for meta_key in passthrough_keys:
+                raw_meta = value.get(meta_key)
+                if isinstance(raw_meta, str):
+                    meta_value = raw_meta.strip()
+                    if meta_value:
+                        entry[meta_key] = meta_value
         normalized[key] = entry
 
     return normalized

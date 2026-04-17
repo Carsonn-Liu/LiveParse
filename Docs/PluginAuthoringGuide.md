@@ -2,7 +2,7 @@
 
 本文面向贡献者：当你要为 LiveParse 新增一个平台插件时，按这里的规范落地即可。
 
-> 当前仓库为纯 JS 插件模式：平台解析逻辑在 JS，Swift 侧只提供宿主能力与弹幕协议解析。
+> 当前仓库为纯 JS 插件模式：平台解析逻辑在 JS。若接入新弹幕驱动，宿主只保留 transport，协议解析也放在插件里。
 
 ## 1. 先确定插件标识与版本
 
@@ -49,6 +49,7 @@
 - `entry` 必须指向同版本入口 JS 文件名。
 - `preloadScripts` 可选；如果依赖签名库/加密库，在这里声明。
 - `capabilities` 可选；建议显式声明 8 大能力的可用性，便于宿主 UI 做静态提示。
+- 如弹幕走插件驱动，可在 `capabilities.danmaku` 里补充 `driver`、`transport`、`protocolId`、`protocolVersion`，发布脚本会原样写入远端索引。
 - `changelog` 可选；用于远端插件索引展示更新日志。
 
 ## 3. JS 插件必须实现的 8 个核心方法
@@ -87,6 +88,16 @@ globalThis.LiveParsePlugin = {
   async getDanmaku(payload) { return { args: {}, headers: null }; }
 };
 ```
+
+如平台要把弹幕协议解析也做成插件能力，`getDanmaku` 之外还可实现以下可选方法：
+
+- `createDanmakuSession(payload)`
+- `onDanmakuOpen(payload)`
+- `onDanmakuFrame(payload)`
+- `onDanmakuTick(payload)`
+- `destroyDanmakuSession(payload)`
+
+只有当 `getDanmaku` 返回 `runtime.driver = "plugin_js_v1"` 时，宿主才会进入这套驱动生命周期。
 
 ## 4. 返回结构契约（重点）
 
@@ -176,7 +187,7 @@ globalThis.LiveParsePlugin = {
 
 ### 4.5 getDanmaku
 
-返回：
+旧插件继续返回：
 
 ```json
 {
@@ -195,6 +206,75 @@ globalThis.LiveParsePlugin = {
 ```json
 { "args": {}, "headers": null }
 ```
+
+若要把弹幕协议解析也下沉到插件，则返回扩展结构：
+
+```json
+{
+  "args": {
+    "roomId": "12345",
+    "token": "..."
+  },
+  "headers": {
+    "User-Agent": "..."
+  },
+  "transport": {
+    "kind": "websocket",
+    "url": "wss://example.invalid/socket",
+    "frameType": "binary"
+  },
+  "runtime": {
+    "driver": "plugin_js_v1",
+    "protocolId": "example_ws",
+    "protocolVersion": "1"
+  }
+}
+```
+
+约定：
+
+- `transport` 只描述宿主如何建连，具体字段见 `Docs/DanmakuDriverAPI.md`
+- `runtime.driver = "plugin_js_v1"` 表示协议层交给插件驱动
+- 插件运行时会被复用，所有弹幕 session 状态必须按 `connectionId` 隔离
+- 若新驱动方法未实现或运行失败，宿主会回退旧链路，因此迁移时不要删除旧平台可用的 transport 参数
+
+### 4.6 可选弹幕驱动方法
+
+当 `getDanmaku` 返回 `runtime.driver = "plugin_js_v1"` 时，建议实现：
+
+```js
+globalThis.LiveParsePlugin = {
+  async createDanmakuSession(payload) {
+    return { ok: true, timer: { mode: "off" } };
+  },
+
+  async onDanmakuOpen(payload) {
+    return { writes: [], timer: { mode: "off" } };
+  },
+
+  async onDanmakuFrame(payload) {
+    return { messages: [], writes: [], timer: { mode: "off" } };
+  },
+
+  async onDanmakuTick(payload) {
+    return { writes: [], timer: { mode: "off" } };
+  },
+
+  async destroyDanmakuSession(payload) {
+    return { ok: true };
+  }
+};
+```
+
+职责边界：
+
+- `createDanmakuSession`：初始化 `connectionId` 对应的协议状态
+- `onDanmakuOpen`：在 WebSocket 建连成功后返回首批握手 / 入组写包
+- `onDanmakuFrame`：解码 frame、产出消息、ack 与后续写包
+- `onDanmakuTick`：生成心跳或轮询请求
+- `destroyDanmakuSession`：释放按 `connectionId` 保存的 session 状态
+
+完整字段定义、轮询模型和 fallback 约束见 `Docs/DanmakuDriverAPI.md`。
 
 ## 5. Host 能力使用规范
 

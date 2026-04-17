@@ -15,7 +15,7 @@
 - 仓库是 Swift Package：LiveParse。
 - 当前为纯 JS 插件模式：enableJSPlugins = true，pluginFallbackToSwiftImplementation = false。
 - 禁止新增平台级 Swift fallback。
-- 平台解析逻辑只能放在 JS 插件中；Swift 侧仅宿主能力与弹幕协议解析。
+- 平台解析逻辑只能放在 JS 插件中；Swift 侧只保留宿主能力。若平台弹幕解析也做成插件能力，则 transport 在宿主、protocol 在 JS 插件。
 - 发布脚本默认扫描当前仓库全部 manifest；新增平台不需要再维护平台名称映射表。
 
 [文件位置与命名]
@@ -44,6 +44,10 @@
   6) getLiveState
   7) resolveShare
   8) getDanmaku
+- 若目标平台要把弹幕协议解析下沉到插件，并且需要 websocket / polling 驱动：
+  - getDanmaku 需返回 transport + runtime.driver
+  - 额外实现 createDanmakuSession / onDanmakuOpen / onDanmakuFrame / onDanmakuTick / destroyDanmakuSession
+  - 所有弹幕 session 状态必须按 connectionId 隔离
 
 [Host 能力使用]
 - 网络请求统一通过 Host.http.request。
@@ -60,7 +64,10 @@
   roomId, title, qn, url, liveCodeType, liveType（可含 userAgent/headers）。
   若返回 userAgent，则不要在 headers 中重复写 User-Agent；qualitys 需按最高画质到最低画质排序。
 - getLiveState 推荐返回 { "liveState": "0|1|2|3" }。
-- getDanmaku 返回 { args: {...}, headers: {...}|null }。
+- getDanmaku 至少返回 { args: {...}, headers: {...}|null }。
+- 若启用插件弹幕驱动，可扩展返回：
+  { args, headers, transport: { kind, url, frameType }, runtime: { driver: "plugin_js_v1", protocolId?, protocolVersion? } }。
+- transport 只描述宿主如何建连；握手、心跳、frame 解码、ack、cursor 推进放在插件驱动方法里。
 
 [编码与输出格式]
 - 仅输出最终可落地内容，不要解释过程。
@@ -85,6 +92,7 @@
 - 平台站点: <DOMAIN 或 API 描述>
 - Cookie 策略: <是否需要 platform_cookie>
 - 弹幕支持: <websocket / polling / 暂不支持>
+- 弹幕协议归属: <宿主旧链路 / 插件驱动 plugin_js_v1>
 
 实现要求：
 1) 生成两个文件（完整内容）：
@@ -95,7 +103,8 @@
 4) HTTP 请求统一封装，且在需要时使用 authMode: "platform_cookie"。
 5) 返回结构必须匹配 LiveParse 现有数据模型字段。
 6) 若某能力暂未实现（例如弹幕），返回安全兜底结果，不要抛未捕获异常。
-7) 最后附一段“本地自测清单”（只列命令，不要解释）：
+7) 若指定“插件驱动 plugin_js_v1”，则实现 getDanmaku 的 transport/runtime 返回以及 5 个可选弹幕驱动方法，并确保 session 按 connectionId 隔离。
+8) 最后附一段“本地自测清单”（只列命令，不要解释）：
    - swift build
    - swift test --filter PluginSystemTests
 ```
@@ -105,5 +114,5 @@
 ## 3) 可直接使用的“极速版”单条 Prompt
 
 ```text
-你现在是 LiveParse 插件开发器。请生成新平台插件 twitch，version=1.0.0，liveType=9，displayName="Twitch"，platformDescription="全球游戏直播平台"。输出两个文件完整内容：Resources/lp_plugin_twitch_1.0.0_manifest.json 和 Resources/lp_plugin_twitch_1.0.0_index.js。必须实现 getCategories/getRooms/getPlayback/search/getRoomDetail/getLiveState/resolveShare/getDanmaku 八个方法；网络统一用 Host.http.request；需要鉴权请求时 authMode="platform_cookie" 且 platformId="twitch"；参数错误统一 Host.raise("INVALID_ARGS", ...)。返回数据结构必须匹配 LiveParse 模型字段。最后输出三行自测命令：swift build、swift test --filter PluginSystemTests、swift test --filter TwitchTests。
+你现在是 LiveParse 插件开发器。请生成新平台插件 twitch，version=1.0.0，liveType=9，displayName="Twitch"，platformDescription="全球游戏直播平台"。输出两个文件完整内容：Resources/lp_plugin_twitch_1.0.0_manifest.json 和 Resources/lp_plugin_twitch_1.0.0_index.js。必须实现 getCategories/getRooms/getPlayback/search/getRoomDetail/getLiveState/resolveShare/getDanmaku 八个方法；若弹幕协议走插件驱动，则额外实现 createDanmakuSession/onDanmakuOpen/onDanmakuFrame/onDanmakuTick/destroyDanmakuSession；网络统一用 Host.http.request；需要鉴权请求时 authMode="platform_cookie" 且 platformId="twitch"；参数错误统一 Host.raise("INVALID_ARGS", ...)。返回数据结构必须匹配 LiveParse 模型字段。最后输出三行自测命令：swift build、swift test --filter PluginSystemTests、swift test --filter TwitchTests。
 ```

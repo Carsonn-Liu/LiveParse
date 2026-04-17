@@ -1208,6 +1208,21 @@ async function _tw_getPlaybackForLogin(login, payload) {
   });
 }
 
+const __tw_sharedGlobalKey = "__lp_plugin_twitch_1_0_33_shared";
+
+function _tw_danmakuDriver() {
+  const driver = globalThis.__twDanmakuDriver;
+  if (!driver) {
+    _tw_throw("UNSUPPORTED", "twitch danmaku driver is unavailable", {});
+  }
+  return driver;
+}
+
+globalThis[__tw_sharedGlobalKey] = {
+  throwError: _tw_throw,
+  parseLogin: _tw_parseLogin
+};
+
 globalThis.LiveParsePlugin = {
   apiVersion: 1,
 
@@ -1355,17 +1370,26 @@ globalThis.LiveParsePlugin = {
     if (!login) {
       return { args: {}, headers: null };
     }
+    return await _tw_danmakuDriver().getDanmakuPlan(login);
+  },
 
-    const anonId = Math.floor(Math.random() * 900000 + 100000);
-    return {
-      args: {
-        roomId: login,
-        channel: `#${login}`,
-        ws_url: "wss://irc-ws.chat.twitch.tv:443",
-        nickname: `justinfan${anonId}`,
-        capability: "CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership"
-      },
-      headers: null
-    };
+  async createDanmakuSession(payload) {
+    return await _tw_danmakuDriver().createDanmakuSession(payload || {});
+  },
+
+  async onDanmakuOpen(payload) {
+    return await _tw_danmakuDriver().onDanmakuOpen(payload || {});
+  },
+
+  async onDanmakuFrame(payload) {
+    return await _tw_danmakuDriver().onDanmakuFrame(payload || {});
+  },
+
+  async onDanmakuTick(payload) {
+    return await _tw_danmakuDriver().onDanmakuTick(payload || {});
+  },
+
+  async destroyDanmakuSession(payload) {
+    return await _tw_danmakuDriver().destroyDanmakuSession(payload || {});
   }
 };

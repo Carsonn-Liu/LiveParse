@@ -8,6 +8,7 @@ const _xhs_runtime = {
   cookie: "",
   liveListCursors: {}
 };
+globalThis.__xhs_runtime_cookie = _xhs_runtime.cookie;
 
 async function _xhs_request(request, authMode) {
   return await Host.http.request({
@@ -69,6 +70,16 @@ function _xhs_parseJSON(text, fallback) {
   } catch (e) {
     return fallback === undefined ? null : fallback;
   }
+}
+
+function _xhs_uuidv4() {
+  try {
+    if (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function") {
+      return globalThis.crypto.randomUUID();
+    }
+  } catch (e) {}
+  const rand = () => Math.floor(Math.random() * 0x10000).toString(16).padStart(4, "0");
+  return `${rand()}${rand()}-${rand()}-4${rand().slice(1)}-${((Math.random() * 4) | 8).toString(16)}${rand().slice(1)}-${rand()}${rand()}${rand()}`;
 }
 
 function _xhs_responseJSON(resp) {
@@ -524,11 +535,13 @@ function _xhs_mapLiveState(xhsStatus) {
   }
 }
 
-function _xhs_modelFromCurrentRoomInfo(obj) {
+function _xhs_modelFromCurrentRoomInfo(obj, requestedRoomId) {
   const data = obj && typeof obj === "object" && obj.data && typeof obj.data === "object" ? obj.data : {};
   const hostInfo = data.host_info && typeof data.host_info === "object" ? data.host_info : {};
   const roomInfo = data.room_info && typeof data.room_info === "object" ? data.room_info : {};
-  const roomId = _xhs_pickFirst([roomInfo.room_id, roomInfo.roomId, roomInfo.id]);
+  // 下播时 XHS 返回 success=true / host_info 完整 / room_info.room_id=null，
+  // 用调用方传入的 requestedRoomId 兜底，让宿主仍拿得到可用标识用于展示「已关播 / 未开播」。
+  const roomId = _xhs_pickFirst([roomInfo.room_id, roomInfo.roomId, roomInfo.id, requestedRoomId]);
   const userId = _xhs_pickFirst([
     hostInfo.user_id,
     hostInfo.userId,
@@ -1067,6 +1080,24 @@ function _xhs_makeLiveRoomURL(roomId) {
   return `https://www.xiaohongshu.com/livestream/${encodeURIComponent(_xhs_trim(roomId))}?source=web_live_list`;
 }
 
+async function _xhs_resolveRoomURL(input, roomId) {
+  const payload = _xhs_roomPayload(input);
+  const candidate = _xhs_pickFirst([
+    payload && payload.roomURL,
+    payload && payload.roomUrl,
+    payload && payload.webUrl,
+    payload && payload.url,
+    payload && payload.shareCode
+  ]);
+  const fallback = _xhs_makeLiveRoomURL(roomId);
+  if (!candidate) return fallback;
+  const resolved = await _xhs_resolveURL(candidate);
+  const normalized = _xhs_trim(resolved);
+  if (!normalized) return fallback;
+  if (/^https?:\/\/www\.xiaohongshu\.com\/livestream\//i.test(normalized)) return normalized;
+  return fallback;
+}
+
 async function _xhs_resolveRoomIdFromInput(input) {
   const raw = _xhs_trim(input);
   if (!raw) return "";
@@ -1145,8 +1176,19 @@ async function _xhs_getRoomDetail(input) {
   const roomId = await _xhs_resolveRoomId(input);
   if (!roomId) _xhs_throw("NOT_FOUND", "xiaohongshu roomId not found", { input: _xhs_trim(typeof input === "string" ? input : JSON.stringify(input || {})) });
   const obj = await _xhs_getCurrentRoomInfo(roomId);
-  const model = _xhs_modelFromCurrentRoomInfo(obj);
-  if (!model.roomId) _xhs_throw("INVALID_RESPONSE", "xiaohongshu current_room_info missing roomId", { roomId });
+  // -20010 = 房间真的不存在；其它 success=false 再抛 INVALID_RESPONSE
+  if (obj && obj.success === false) {
+    const apiCode = _xhs_str(obj.code);
+    const apiMsg = _xhs_str(obj.msg || obj.message);
+    if (apiCode === "-20010") {
+      _xhs_throw("NOT_FOUND", apiMsg || "xiaohongshu room not found", { roomId, code: apiCode });
+    }
+    _xhs_throw("INVALID_RESPONSE", apiMsg || "xiaohongshu current_room_info failed", { roomId, code: apiCode });
+  }
+  const model = _xhs_modelFromCurrentRoomInfo(obj, roomId);
+  // 下播（status=3 / room_info.room_id=null / host_info 仍在）现在通过 requestedRoomId 兜底
+  // 会返回合法 model（liveState="0"），不再 throw INVALID_RESPONSE。
+  if (!model.roomId) _xhs_throw("NOT_FOUND", "xiaohongshu room not found", { roomId });
   delete model._xhsPlaybackStreams;
   return model;
 }
@@ -1155,11 +1197,25 @@ async function _xhs_getPlayback(input) {
   const roomId = await _xhs_resolveRoomId(input);
   if (!roomId) _xhs_throw("NOT_FOUND", "xiaohongshu roomId not found", { input: _xhs_trim(typeof input === "string" ? input : JSON.stringify(input || {})) });
   const obj = await _xhs_getCurrentRoomInfo(roomId);
-  const model = _xhs_modelFromCurrentRoomInfo(obj);
+  if (obj && obj.success === false) {
+    const apiCode = _xhs_str(obj.code);
+    const apiMsg = _xhs_str(obj.msg || obj.message);
+    if (apiCode === "-20010") {
+      _xhs_throw("NOT_FOUND", apiMsg || "xiaohongshu room not found", { roomId, code: apiCode });
+    }
+    _xhs_throw("INVALID_RESPONSE", apiMsg || "xiaohongshu current_room_info failed", { roomId, code: apiCode });
+  }
+  const model = _xhs_modelFromCurrentRoomInfo(obj, roomId);
   if (model.liveState !== "1") {
     _xhs_throw("NOT_LIVE", "xiaohongshu room is not live", { roomId: model.roomId || roomId, status: model.status || model.liveState });
   }
   return _xhs_playbackFromCurrentRoomInfo(obj);
+}
+
+function _xhs_danmakuDriver() {
+  const driver = globalThis.__xhsDanmakuDriver;
+  if (!driver) _xhs_throw("UNSUPPORTED", "xiaohongshu danmaku driver is unavailable", {});
+  return driver;
 }
 
 globalThis.LiveParsePlugin = {
@@ -1175,11 +1231,13 @@ globalThis.LiveParsePlugin = {
         payload && payload.headers && payload.headers.cookie
       ]);
     _xhs_runtime.cookie = _xhs_normalizeCookie(cookie);
+    globalThis.__xhs_runtime_cookie = _xhs_runtime.cookie;
     return { ok: true };
   },
 
   async clearCookie() {
     _xhs_runtime.cookie = "";
+    globalThis.__xhs_runtime_cookie = _xhs_runtime.cookie;
     return { ok: true };
   },
 
@@ -1247,7 +1305,11 @@ globalThis.LiveParsePlugin = {
     const roomId = await _xhs_resolveRoomId(input);
     if (!roomId) _xhs_throw("NOT_FOUND", "xiaohongshu roomId not found", { input: JSON.stringify(input || {}) });
     const obj = await _xhs_getCurrentRoomInfo(roomId);
-    const info = _xhs_modelFromCurrentRoomInfo(obj);
+    // 轻量查询，宿主不关心细节：房间不在 / 业务失败都优雅降级为「未开播」。
+    if (obj && obj.success === false) {
+      return { liveState: "0", status: _xhs_str(obj.code) || "3" };
+    }
+    const info = _xhs_modelFromCurrentRoomInfo(obj, roomId);
     return {
       liveState: String(info && info.liveState ? info.liveState : "0"),
       status: String(info && info.status ? info.status : "3")
@@ -1260,7 +1322,157 @@ globalThis.LiveParsePlugin = {
     return await _xhs_getRoomDetail({ shareCode });
   },
 
-  async getDanmaku() {
-    return { args: {}, headers: null };
+  async getDanmaku(payload) {
+    const input = _xhs_roomPayload(payload || {});
+    if (!_xhs_hasRoomInput(input)) _xhs_throw("INVALID_ARGS", "roomId/userId/url is required", { field: "roomId" });
+    const roomId = await _xhs_resolveRoomId(input);
+    if (!roomId) _xhs_throw("NOT_FOUND", "xiaohongshu roomId not found", { input: JSON.stringify(input || {}) });
+    const roomURL = await _xhs_resolveRoomURL(input, roomId);
+
+    // 1) /user/me → uid + display profile (needed for AUTH frame and viewer_heart).
+    const meResp = await _xhs_requestSigned({
+      url: "https://edith.xiaohongshu.com/api/sns/web/v2/user/me",
+      method: "GET",
+      headers: {
+        "Accept": "application/json, text/plain, */*",
+        "Origin": "https://www.xiaohongshu.com",
+        "Referer": "https://www.xiaohongshu.com/",
+        "User-Agent": _xhs_webUA
+      },
+      timeout: 15
+    }, false);
+    const meJSON = _xhs_responseJSON(meResp) || {};
+    if (meJSON.success === false || (meJSON.code !== undefined && meJSON.code !== 0 && meJSON.code !== "0")) {
+      _xhs_throw("AUTH_REQUIRED", "xiaohongshu /user/me rejected; login required", {
+        code: String(meJSON.code), msg: _xhs_str(meJSON.msg)
+      });
+    }
+    const meData = (meJSON.data && typeof meJSON.data === "object") ? meJSON.data : {};
+    const uid = _xhs_trim(meData.user_id || meData.userId);
+    if (!uid) _xhs_throw("AUTH_REQUIRED", "xiaohongshu /user/me missing user_id; login required", {});
+    const selfNickname = _xhs_trim(meData.nickname || meData.nickName || "");
+    const selfAvatar = _xhs_trim(meData.images || meData.imageb || meData.avatar || "");
+
+    // 2) /celestial/lt + c_device_id → a_lt (sid) for the rwp AUTH frame.
+    const deviceId = _xhs_uuidv4();
+    const ltResp = await _xhs_requestSigned({
+      url: "https://edith.xiaohongshu.com/api/sns/web/v1/celestial/lt",
+      method: "GET",
+      headers: {
+        "Accept": "application/json, text/plain, */*",
+        "Origin": "https://www.xiaohongshu.com",
+        "Referer": "https://www.xiaohongshu.com/",
+        "User-Agent": _xhs_webUA,
+        "c_device_id": deviceId
+      },
+      timeout: 15
+    }, false);
+    const ltJSON = _xhs_responseJSON(ltResp) || {};
+    if (ltJSON.success === false || (ltJSON.code !== undefined && ltJSON.code !== 0 && ltJSON.code !== "0")) {
+      _xhs_throw("AUTH_REQUIRED", "xiaohongshu /celestial/lt rejected", {
+        code: String(ltJSON.code), msg: _xhs_str(ltJSON.msg)
+      });
+    }
+    const aLt = _xhs_trim((ltJSON.data || {}).a_lt || (ltJSON.data || {}).aLt);
+    if (!aLt) _xhs_throw("AUTH_REQUIRED", "xiaohongshu /celestial/lt missing a_lt", {});
+
+    // 3) One-shot /join_comment_info snapshot → up to 5 history chat messages.
+    // (Real-time stream then comes via the rwp WebSocket; this snapshot just makes
+    // sure the UI isn't empty for the first few seconds before SYNC frames arrive.)
+    const historyURL = _xhs_appendQuery(
+      "https://live-room.xiaohongshu.com/api/sns/red/live/web/v1/room/join_comment_info",
+      { room_id: roomId, source: "web_live", pre_source: "pc_web", track_id: "", client_type: 1 }
+    );
+    const historyMessages = [];
+    try {
+      const historyResp = await _xhs_requestSigned({
+        url: historyURL,
+        method: "GET",
+        headers: {
+          "Accept": "application/json, text/plain, */*",
+          "Origin": "https://www.xiaohongshu.com",
+          "Referer": roomURL,
+          "User-Agent": _xhs_webUA
+        },
+        timeout: 10
+      }, false);
+      const historyJSON = _xhs_responseJSON(historyResp) || {};
+      if (historyJSON.success !== false && (historyJSON.code === 0 || historyJSON.code === "0" || historyJSON.code === undefined)) {
+        const data = (historyJSON.data && typeof historyJSON.data === "object") ? historyJSON.data : {};
+        const seen = {};
+        const sources = [];
+        if (Array.isArray(data.chat_msgs)) sources.push(data.chat_msgs);
+        if (Array.isArray(data.chat_msgs_part2)) sources.push(data.chat_msgs_part2);
+        for (const src of sources) {
+          for (const it of src) {
+            if (!it || typeof it !== "object") continue;
+            const text = _xhs_trim(it.msg || it.content || it.text);
+            if (!text) continue;
+            const nickname = _xhs_trim(it.nick_name || it.nickname || it.name) || "";
+            const key = _xhs_trim(it.comment_id || it.commentId || it.id) || `${nickname}::${text}`;
+            if (seen[key]) continue;
+            seen[key] = true;
+            historyMessages.push({ text, nickname, color: 16777215 });
+          }
+        }
+      }
+    } catch (err) {
+      // History fetch is best-effort; WS will still connect.
+    }
+
+    const fingerprint = String(Date.now());
+
+    return {
+      args: {
+        roomId: roomId,
+        roomURL: roomURL,
+        sid: aLt,
+        uid: uid,
+        deviceId: deviceId,
+        fingerprint: fingerprint,
+        nickname: selfNickname,
+        avatar: selfAvatar,
+        userAgent: _xhs_webUA,
+        heartbeatMs: "25000",
+        historyMessagesJSON: JSON.stringify(historyMessages)
+      },
+      headers: {
+        "Accept": "application/json, text/plain, */*",
+        "Origin": "https://www.xiaohongshu.com",
+        "Referer": roomURL,
+        "User-Agent": _xhs_webUA,
+        "Cookie": _xhs_normalizeCookie(_xhs_runtime.cookie || "")
+      },
+      transport: {
+        kind: "websocket",
+        url: "wss://apppush-rws.xiaohongshu.com/rwp",
+        frameType: "text"
+      },
+      runtime: {
+        driver: "plugin_js_v1",
+        protocolId: "xhs_rwp_ws",
+        protocolVersion: "1"
+      }
+    };
+  },
+
+  async createDanmakuSession(payload) {
+    return await _xhs_danmakuDriver().createDanmakuSession(payload || {});
+  },
+
+  async onDanmakuOpen(payload) {
+    return await _xhs_danmakuDriver().onDanmakuOpen(payload || {});
+  },
+
+  async onDanmakuFrame(payload) {
+    return await _xhs_danmakuDriver().onDanmakuFrame(payload || {});
+  },
+
+  async onDanmakuTick(payload) {
+    return await _xhs_danmakuDriver().onDanmakuTick(payload || {});
+  },
+
+  async destroyDanmakuSession(payload) {
+    return await _xhs_danmakuDriver().destroyDanmakuSession(payload || {});
   }
 };

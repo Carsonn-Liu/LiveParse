@@ -325,6 +325,23 @@ function _yy_makeUUIDNoDash() {
   });
 }
 
+
+const __yy_sharedGlobalKey = "__lp_plugin_yy_1_0_2_shared";
+
+function _yy_danmakuDriver() {
+  const driver = globalThis.__yyDanmakuDriver;
+  if (!driver) {
+    _yy_throw("UNSUPPORTED", "yy danmaku driver is unavailable", {});
+  }
+  return driver;
+}
+
+globalThis[__yy_sharedGlobalKey] = {
+  throwError: _yy_throw,
+  makeUUIDNoDash: _yy_makeUUIDNoDash,
+  playbackUserAgent: __lp_yy_playbackUserAgent
+};
+
 globalThis.LiveParsePlugin = {
   apiVersion: 1,
 
@@ -578,20 +595,26 @@ globalThis.LiveParsePlugin = {
   async getDanmaku(payload) {
     const roomId = String(payload && payload.roomId ? payload.roomId : "");
     if (!roomId) _yy_throw("INVALID_ARGS", "roomId is required", { field: "roomId" });
-    const wsUUID = _yy_makeUUIDNoDash();
-    const wsURL = `wss://h5-sinchl.yy.com/websocket?appid=yymwebh5&version=3.2.10&uuid=${encodeURIComponent(wsUUID)}&sign=a8d7eef2`;
-    return {
-      args: {
-        roomId: String(roomId),
-        sid: String(roomId),
-        ssid: String(roomId),
-        ws_uuid: String(wsUUID),
-        ws_url: String(wsURL)
-      },
-      headers: {
-        "User-Agent": __lp_yy_playbackUserAgent,
-        Origin: "https://www.yy.com"
-      }
-    };
+    return await _yy_danmakuDriver().getDanmakuPlan(roomId);
+  },
+
+  async createDanmakuSession(payload) {
+    return await _yy_danmakuDriver().createDanmakuSession(payload);
+  },
+
+  async onDanmakuOpen(payload) {
+    return await _yy_danmakuDriver().onDanmakuOpen(payload);
+  },
+
+  async onDanmakuFrame(payload) {
+    return await _yy_danmakuDriver().onDanmakuFrame(payload);
+  },
+
+  async onDanmakuTick(payload) {
+    return await _yy_danmakuDriver().onDanmakuTick(payload);
+  },
+
+  async destroyDanmakuSession(payload) {
+    return await _yy_danmakuDriver().destroyDanmakuSession(payload);
   }
 };

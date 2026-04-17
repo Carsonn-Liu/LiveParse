@@ -2784,6 +2784,34 @@ async function _yt_searchLive(keyword) {
   return items;
 }
 
+const __yt_sharedGlobalKey = "__lp_plugin_youtube_1_1_1_shared";
+
+function _yt_danmakuDriver() {
+  var driver = globalThis.__ytDanmakuDriver;
+  if (!driver) {
+    _yt_throw("UNSUPPORTED", "youtube danmaku driver is unavailable", {});
+  }
+  return driver;
+}
+
+globalThis[__yt_sharedGlobalKey] = {
+  throwError: _yt_throw,
+  str: _yt_str,
+  textFromRuns: _yt_textFromRuns,
+  collectByKey: _yt_collectByKey,
+  resolveVideoId: _yt_resolveVideoId,
+  fetchWatchByVideoId: _yt_fetchWatchByVideoId,
+  extractWatchPlayerResponse: _yt_extractWatchPlayerResponse,
+  extractInitialData: _yt_extractInitialData,
+  extractLiveChatContinuation: _yt_extractLiveChatContinuation,
+  extractInnertubeApiKey: _yt_extractInnertubeApiKey,
+  extractInnertubeClientVersion: _yt_extractInnertubeClientVersion,
+  extractVisitorData: _yt_extractVisitorData,
+  webClientName: __yt_webClientName,
+  webClientVersionFallback: __yt_webClientVersionFallback,
+  userAgent: __yt_ua
+};
+
 globalThis.LiveParsePlugin = {
   apiVersion: 1,
 
@@ -2948,49 +2976,27 @@ globalThis.LiveParsePlugin = {
     if (!roomId) {
       _yt_throw("INVALID_ARGS", "roomId is required", { field: "roomId" });
     }
+    return await _yt_danmakuDriver().getDanmakuPlan(roomId);
+  },
 
-    var resolved = await _yt_resolveVideoId(roomId);
-    var watch = await _yt_fetchWatchByVideoId(resolved.videoId);
-    var playerResponse = _yt_extractWatchPlayerResponse(watch.text);
-    var initialData = null;
-    try {
-      initialData = _yt_extractInitialData(watch.text);
-    } catch (_) {
-      initialData = null;
-    }
+  async createDanmakuSession(payload) {
+    return await _yt_danmakuDriver().createDanmakuSession(payload);
+  },
 
-    var continuation = _yt_extractLiveChatContinuation(playerResponse, initialData, watch.text);
-    if (!continuation) {
-      _yt_throw("NOT_FOUND", "youtube live chat continuation not found", {
-        roomId: _yt_str(roomId),
-        videoId: _yt_str(resolved.videoId)
-      });
-    }
+  async onDanmakuOpen(payload) {
+    return await _yt_danmakuDriver().onDanmakuOpen(payload);
+  },
 
-    var apiKey = _yt_extractInnertubeApiKey(watch.text) || __yt_youtubeiFallbackApiKey;
-    var clientVersion = _yt_extractInnertubeClientVersion(watch.text) || __yt_webClientVersionFallback;
+  async onDanmakuFrame(payload) {
+    return await _yt_danmakuDriver().onDanmakuFrame(payload);
+  },
 
-    return {
-      args: {
-        _danmu_type: "http_polling",
-        _polling_url: "https://www.youtube.com/youtubei/v1/live_chat/get_live_chat",
-        _polling_method: "POST",
-        _polling_interval: "2500",
-        continuation: _yt_str(continuation),
-        apiKey: _yt_str(apiKey),
-        clientName: __yt_webClientName,
-        clientVersion: _yt_str(clientVersion),
-        hl: "en",
-        gl: "US",
-        videoId: _yt_str(resolved.videoId)
-      },
-      headers: {
-        "Content-Type": "application/json",
-        Origin: "https://www.youtube.com",
-        Referer: "https://www.youtube.com/watch?v=" + encodeURIComponent(_yt_str(resolved.videoId)),
-        "User-Agent": __yt_ua
-      }
-    };
+  async onDanmakuTick(payload) {
+    return await _yt_danmakuDriver().onDanmakuTick(payload);
+  },
+
+  async destroyDanmakuSession(payload) {
+    return await _yt_danmakuDriver().destroyDanmakuSession(payload);
   }
 };
 

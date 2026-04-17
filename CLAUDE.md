@@ -49,7 +49,7 @@ LiveParse/
 | `getRoomDetail` | `getLiveLastestInfo` | 获取房间详情 |
 | `getLiveState` | `getLiveState` | 获取直播状态 |
 | `resolveShare` | `getRoomInfoFromShareCode` | 解析分享码 |
-| `getDanmaku` | `getDanmukuArgs` | 获取弹幕参数 |
+| `getDanmaku` | `getDanmukuArgs` | 获取弹幕连接计划 / 驱动入口 |
 
 ## 插件开发规范
 
@@ -57,6 +57,21 @@ LiveParse/
 2. 插件文件命名：`lp_plugin_<pluginId>_<version>_manifest.json` + `lp_plugin_<pluginId>_<version>_index.js`。
 3. 如需预加载脚本（如签名库），在 manifest 的 `preloadScripts` 中声明。
 4. 详细开发指南见 `Docs/PluginAuthoringGuide.md`。
+
+若平台需要把弹幕协议解析也下沉到插件，除 `getDanmaku` 外还可实现：
+
+- `createDanmakuSession`
+- `onDanmakuOpen`
+- `onDanmakuFrame`
+- `onDanmakuTick`
+- `destroyDanmakuSession`
+
+边界保持不变：
+
+- AngelLive 宿主负责 transport（WebSocket / HTTP 轮询 / 定时器 / 重连）
+- JS 插件负责 protocol（握手、心跳、解码、ack、cursor / session 状态）
+
+详细协议见 `Docs/DanmakuDriverAPI.md`。
 
 ## Host 桥接 API
 

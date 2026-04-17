@@ -372,6 +372,20 @@ async function _douyu_resolveShare(shareCode) {
   _douyu_throw("NOT_FOUND", "roomId not found", { shareCode: String(shareCode || "") });
 }
 
+const __douyu_sharedGlobalKey = "__lp_plugin_douyu_1_0_4_shared";
+
+function _douyu_danmakuDriver() {
+  const driver = globalThis.__douyuDanmakuDriver;
+  if (!driver) {
+    _douyu_throw("UNSUPPORTED", "douyu danmaku driver is unavailable", {});
+  }
+  return driver;
+}
+
+globalThis[__douyu_sharedGlobalKey] = {
+  throwError: _douyu_throw
+};
+
 globalThis.LiveParsePlugin = {
   apiVersion: 1,
 
@@ -424,11 +438,26 @@ globalThis.LiveParsePlugin = {
   async getDanmaku(payload) {
     const roomId = String(payload && payload.roomId ? payload.roomId : "");
     if (!roomId) _douyu_throw("INVALID_ARGS", "roomId is required", { field: "roomId" });
-    return {
-      args: {
-        roomId: String(roomId)
-      },
-      headers: null
-    };
+    return await _douyu_danmakuDriver().getDanmakuPlan(roomId);
+  },
+
+  async createDanmakuSession(payload) {
+    return await _douyu_danmakuDriver().createDanmakuSession(payload);
+  },
+
+  async onDanmakuOpen(payload) {
+    return await _douyu_danmakuDriver().onDanmakuOpen(payload);
+  },
+
+  async onDanmakuFrame(payload) {
+    return await _douyu_danmakuDriver().onDanmakuFrame(payload);
+  },
+
+  async onDanmakuTick(payload) {
+    return await _douyu_danmakuDriver().onDanmakuTick(payload);
+  },
+
+  async destroyDanmakuSession(payload) {
+    return await _douyu_danmakuDriver().destroyDanmakuSession(payload);
   }
 };

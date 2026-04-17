@@ -530,6 +530,53 @@ async function _lp_getHlsPlayURL(stream, presenterUid, bitRate) {
   return url;
 }
 
+const __huya_sharedGlobalKey = "__lp_plugin_huya_1_0_4_shared";
+const __huya_mobileUA = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/91.0.4472.69";
+const __huya_danmakuWebSocketURL = "wss://cdnws.api.huya.com";
+
+async function _huya_getDanmakuContext(roomId) {
+  const id = String(roomId || "");
+  if (!id) _huya_throw("INVALID_ARGS", "roomId is required", { field: "roomId" });
+
+  const resp = await Host.http.request({
+    url: `https://m.huya.com/${id}`,
+    method: "GET",
+    headers: { "user-agent": __huya_mobileUA },
+    timeout: 20
+  });
+  const html = resp.bodyText || "";
+
+  const data = _lp_extractHNFGlobalInit(html);
+  const liveInfo = data && data.roomInfo && data.roomInfo.tLiveInfo;
+  const streamInfo = liveInfo && liveInfo.tLiveStreamInfo && liveInfo.tLiveStreamInfo.vStreamInfo;
+  const firstStream = streamInfo && streamInfo.value ? streamInfo.value[0] : null;
+  if (!liveInfo || !firstStream) {
+    _huya_throw("INVALID_RESPONSE", "missing stream info", { roomId: id });
+  }
+
+  return {
+    roomId: id,
+    lYyid: String(liveInfo.lYyid || ""),
+    lChannelId: String(firstStream.lChannelId || ""),
+    lSubChannelId: String(firstStream.lSubChannelId || "")
+  };
+}
+
+function _huya_danmakuDriver() {
+  const driver = globalThis.__huyaDanmakuDriver;
+  if (!driver) {
+    _huya_throw("UNSUPPORTED", "huya danmaku driver is unavailable", {});
+  }
+  return driver;
+}
+
+globalThis[__huya_sharedGlobalKey] = {
+  throwError: _huya_throw,
+  getDanmakuContext: _huya_getDanmakuContext,
+  mobileUA: __huya_mobileUA,
+  danmakuWebSocketURL: __huya_danmakuWebSocketURL
+};
+
 globalThis.LiveParsePlugin = {
   apiVersion: 1,
   async resolveShare(payload) {
@@ -638,32 +685,27 @@ globalThis.LiveParsePlugin = {
   async getDanmaku(payload) {
     const roomId = String(payload && payload.roomId ? payload.roomId : "");
     if (!roomId) _huya_throw("INVALID_ARGS", "roomId is required", { field: "roomId" });
+    return await _huya_danmakuDriver().getDanmakuPlan(roomId);
+  },
 
-    const ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/91.0.4472.69";
-    const resp = await Host.http.request({
-      url: `https://m.huya.com/${roomId}`,
-      method: "GET",
-      headers: { "user-agent": ua },
-      timeout: 20
-    });
-    const html = resp.bodyText || "";
+  async createDanmakuSession(payload) {
+    return await _huya_danmakuDriver().createDanmakuSession(payload);
+  },
 
-    const data = _lp_extractHNFGlobalInit(html);
-    const liveInfo = data && data.roomInfo && data.roomInfo.tLiveInfo;
-    const streamInfo = liveInfo && liveInfo.tLiveStreamInfo && liveInfo.tLiveStreamInfo.vStreamInfo;
-    const firstStream = streamInfo && streamInfo.value ? streamInfo.value[0] : null;
-    if (!liveInfo || !firstStream) {
-      _huya_throw("INVALID_RESPONSE", "missing stream info", { roomId: String(roomId || "") });
-    }
+  async onDanmakuOpen(payload) {
+    return await _huya_danmakuDriver().onDanmakuOpen(payload);
+  },
 
-    return {
-      args: {
-        lYyid: String(liveInfo.lYyid || ""),
-        lChannelId: String(firstStream.lChannelId || ""),
-        lSubChannelId: String(firstStream.lSubChannelId || "")
-      },
-      headers: null
-    };
+  async onDanmakuFrame(payload) {
+    return await _huya_danmakuDriver().onDanmakuFrame(payload);
+  },
+
+  async onDanmakuTick(payload) {
+    return await _huya_danmakuDriver().onDanmakuTick(payload);
+  },
+
+  async destroyDanmakuSession(payload) {
+    return await _huya_danmakuDriver().destroyDanmakuSession(payload);
   },
   async getPlayback(payload) {
     const roomId = String(payload && payload.roomId ? payload.roomId : "");

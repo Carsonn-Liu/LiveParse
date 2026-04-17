@@ -1,0 +1,58 @@
+{
+  "pluginId": "xiaohongshu",
+  "version": "1.0.20",
+  "apiVersion": 1,
+  "displayName": "小红书",
+  "platformDescription": "小红书直播（登录后可用）",
+  "liveTypes": [
+    "11"
+  ],
+  "entry": "lp_plugin_xiaohongshu_1.0.20_index.js",
+  "preloadScripts": [
+    "lp_plugin_xiaohongshu_1.0.20_danmaku.js"
+  ],
+  "capabilities": {
+    "categories": {
+      "status": "partial",
+      "reason": "登录后可用"
+    },
+    "rooms": {
+      "status": "partial",
+      "reason": "登录后可用"
+    },
+    "playback": {
+      "status": "partial",
+      "reason": "登录后可用"
+    },
+    "search": {
+      "status": "unavailable"
+    },
+    "roomDetail": {
+      "status": "partial",
+      "reason": "登录后可用"
+    },
+    "liveState": {
+      "status": "partial",
+      "reason": "登录后可用"
+    },
+    "shareResolve": {
+      "status": "partial",
+      "reason": "登录后可用"
+    },
+    "danmaku": {
+      "status": "partial",
+      "reason": "登录后可用",
+      "driver": "plugin_js_v1",
+      "transport": "websocket",
+      "protocolId": "xhs_rwp_ws",
+      "protocolVersion": "1"
+    }
+  },
+  "changelog": [
+    "1.0.20：修复 1.0.19 SYNC 帧弹幕中文乱码。错用了不存在的 Host.base64.decodeToString/encodeString，fallback 到 atob+无 TextDecoder 的路径把 UTF-8 字节当 latin-1 解释。改用 Host.crypto.base64Decode（宿主原生 UTF-8 解码），对应补了纯 JS UTF-8 encode + base64 encode（liveHeartBeat 用）。",
+    "1.0.19：改走真实 WS 长连 wss://apppush-rws.xiaohongshu.com/rwp,getDanmaku 一次性完成 /user/me + /celestial/lt + /join_comment_info 首批历史;WS 走 AUTH → BIZ_REGISTER → JOIN_ROOM → 25s liveHeartBeat",
+    "1.0.18：签名下沉到宿主 XHSSigningService,删除插件包内 500KB 签名 preload 脚本",
+    "1.0.17：修复主播下播时 getRoomDetail/getLiveState 抛 INVALID_RESPONSE",
+    "1.0.10：对齐网页 current_room_info + join_room 链路"
+  ]
+}

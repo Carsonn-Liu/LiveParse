@@ -1,15 +1,15 @@
 {
-  "pluginId": "cc",
-  "version": "1.0.3",
+  "pluginId": "douyu",
+  "version": "1.0.4",
   "apiVersion": 1,
-  "displayName": "网易CC",
-  "platformDescription": "网易游戏直播",
+  "displayName": "斗鱼",
+  "platformDescription": "每个人的直播平台",
   "liveTypes": [
-    "4"
+    "3"
   ],
-  "entry": "lp_plugin_cc_1.0.3_index.js",
+  "entry": "lp_plugin_douyu_1.0.4_index.js",
   "preloadScripts": [
-    "lp_plugin_cc_1.0.3_danmaku.js"
+    "lp_plugin_douyu_1.0.4_danmaku.js"
   ],
   "capabilities": {
     "categories": {
@@ -36,13 +36,14 @@
     "danmaku": {
       "status": "available",
       "driver": "plugin_js_v1",
-      "transport": "websocket_sockjs",
-      "protocolId": "cc_sockjs_json",
+      "transport": "websocket",
+      "protocolId": "douyu_ws_stt",
       "protocolVersion": "1"
     }
   },
   "changelog": [
-    "弹幕连接地址改为插件侧显式生成 SockJS websocket 路径，避免直接连 /conn 导致升级失败",
-    "继续沿用 Swift 版 CC SockJS 弹幕链路：open 帧后订阅 roomchat 并按原节奏发送心跳"
+    "弹幕连接计划显式返回 User-Agent 请求头，WebSocket 握手责任收敛到插件侧",
+    "1.0.3：弹幕协议迁移到插件驱动，Douyu WebSocket 握手、心跳与 STT 文本解析改为 plugin_js_v1",
+    "修复 getRoomDetail 返回 userId 始终为 0 的问题：owner_id 改为 owner_uid"
   ]
 }
