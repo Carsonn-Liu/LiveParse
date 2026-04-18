@@ -8,7 +8,9 @@
     "10"
   ],
   "entry": "lp_plugin_kick_1.0.22_index.js",
-  "preloadScripts": [],
+  "preloadScripts": [
+    "lp_plugin_kick_1.0.22_danmaku.js"
+  ],
   "capabilities": {
     "categories": {
       "status": "available"
@@ -33,7 +35,11 @@
       "status": "available"
     },
     "danmaku": {
-      "status": "unavailable"
+      "status": "available",
+      "driver": "plugin_js_v1",
+      "transport": "websocket",
+      "protocolId": "kick_pusher_text",
+      "protocolVersion": "1"
     }
   },
   "changelog": [

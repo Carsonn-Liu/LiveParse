@@ -8,7 +8,9 @@
     "13"
   ],
   "entry": "lp_plugin_chzzk_1.0.3_index.js",
-  "preloadScripts": [],
+  "preloadScripts": [
+    "lp_plugin_chzzk_1.0.3_danmaku.js"
+  ],
   "capabilities": {
     "categories": {
       "status": "available"
@@ -32,7 +34,11 @@
       "status": "available"
     },
     "danmaku": {
-      "status": "not_supported"
+      "status": "available",
+      "driver": "plugin_js_v1",
+      "transport": "websocket",
+      "protocolId": "chzzk_chat_text",
+      "protocolVersion": "1"
     }
   },
   "changelog": [

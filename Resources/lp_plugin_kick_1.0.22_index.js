@@ -14,6 +14,7 @@ const _kick_categoryCacheTtlMs = 24 * 60 * 60 * 1000;
 const _kick_officialApiBase = "https://api.kick.com";
 const _kick_tokenServerURL = "https://ttvtoken.a1015403703-db6.workers.dev/kick/app-token";
 const _kick_rscBrowseReferer = "https://kick.com/browse/categories";
+const __kick_sharedGlobalKey = "__lp_plugin_kick_1_0_22_shared";
 const _kick_fallbackCategories = [
   { id: "just-chatting", title: "Just Chatting" },
   { id: "slots-casino", title: "Slots & Casino" },
@@ -595,6 +596,13 @@ async function _kick_fetchJSONStrict(url, payload) {
   });
 }
 
+async function _kick_fetchChatroom(slug, payload) {
+  return await _kick_fetchJSONStrict(
+    "https://kick.com/api/v2/channels/" + encodeURIComponent(_kick_str(slug).trim().toLowerCase()) + "/chatroom",
+    payload
+  );
+}
+
 async function _kick_fetchOfficialTokenFromWorker() {
   const resp = await _kick_request({
     url: _kick_tokenServerURL,
@@ -713,6 +721,20 @@ function _kick_buildPlaybackHeaders(payload) {
   }
   return headers;
 }
+
+function _kick_danmakuDriver() {
+  const driver = globalThis.__kickDanmakuDriver;
+  if (!driver) _kick_throw("UNSUPPORTED", "kick danmaku driver is unavailable", {});
+  return driver;
+}
+
+globalThis[__kick_sharedGlobalKey] = {
+  throwError: _kick_throw,
+  toString: _kick_str,
+  parseRoomSlug: _kick_parseURLPathSlug,
+  fetchChatroom: _kick_fetchChatroom,
+  userAgent: _kick_userAgent
+};
 
 function _kick_normalizeCategoryList(rawList, limit) {
   const maxCount = Math.max(1, Math.min(500, _kick_int(limit, 200)));
@@ -1695,13 +1717,26 @@ globalThis.LiveParsePlugin = {
   },
 
   async getDanmaku(payload) {
-    return {
-      args: {
-        roomId: _kick_str(payload && payload.roomId),
-        _danmu_type: "http_polling",
-        _polling_url: "https://kick.com/"
-      },
-      headers: null
-    };
+    return await _kick_danmakuDriver().getDanmakuPlan(_kick_runtimePayload(payload));
+  },
+
+  async createDanmakuSession(payload) {
+    return await _kick_danmakuDriver().createDanmakuSession(payload || {});
+  },
+
+  async onDanmakuOpen(payload) {
+    return await _kick_danmakuDriver().onDanmakuOpen(payload || {});
+  },
+
+  async onDanmakuFrame(payload) {
+    return await _kick_danmakuDriver().onDanmakuFrame(payload || {});
+  },
+
+  async onDanmakuTick(payload) {
+    return await _kick_danmakuDriver().onDanmakuTick(payload || {});
+  },
+
+  async destroyDanmakuSession(payload) {
+    return await _kick_danmakuDriver().destroyDanmakuSession(payload || {});
   }
 };
