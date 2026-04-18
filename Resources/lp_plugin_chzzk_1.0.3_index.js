@@ -6,6 +6,7 @@ const _cz_playbackUserAgent = "libmpv";
 const _cz_defaultPageSize = 20;
 const _cz_categoriesPageSize = 50;
 const _cz_categoryRoomsPageSize = 50;
+const __cz_sharedGlobalKey = "__lp_plugin_chzzk_1_0_3_shared";
 const _cz_runtime = {
   categoryCursorCache: {}
 };
@@ -550,6 +551,18 @@ async function _cz_fetchLiveStatus(channelId, payload) {
   });
 }
 
+async function _cz_fetchChatAccessToken(chatChannelId, payload) {
+  return await _cz_requestJSON({
+    url:
+      "https://comm-api.game.naver.com/nng_main/v1/chats/access-token?channelId=" +
+      encodeURIComponent(chatChannelId) +
+      "&chatType=STREAMING",
+    headers: {
+      Referer: "https://chzzk.naver.com/"
+    }
+  }, payload, "platform_cookie");
+}
+
 async function _cz_getRoomDetailByChannelId(channelId, payload) {
   const normalized = _cz_str(channelId).trim();
   if (!/^[0-9a-f]{32}$/i.test(normalized)) {
@@ -577,6 +590,20 @@ function _cz_parseShareCode(input) {
   const match = source.match(/chzzk\.naver\.com\/(?:live|channel)\/([0-9a-f]{32})/i);
   return match && match[1] ? match[1] : "";
 }
+
+function _cz_danmakuDriver() {
+  const driver = globalThis.__czDanmakuDriver;
+  if (!driver) _cz_throw("UNSUPPORTED", "chzzk danmaku driver is unavailable", {});
+  return driver;
+}
+
+globalThis[__cz_sharedGlobalKey] = {
+  throwError: _cz_throw,
+  toString: _cz_str,
+  fetchLiveDetail: _cz_fetchLiveDetail,
+  fetchChatAccessToken: _cz_fetchChatAccessToken,
+  userAgent: _cz_webUA
+};
 
 globalThis.LiveParsePlugin = {
   apiVersion: 1,
@@ -671,10 +698,27 @@ globalThis.LiveParsePlugin = {
     return await _cz_getRoomDetailByChannelId(channelId, runtimePayload);
   },
 
-  async getDanmaku() {
-    return {
-      args: {},
-      headers: null
-    };
+  async getDanmaku(payload) {
+    return await _cz_danmakuDriver().getDanmakuPlan(_cz_runtimePayload(payload));
+  },
+
+  async createDanmakuSession(payload) {
+    return await _cz_danmakuDriver().createDanmakuSession(payload || {});
+  },
+
+  async onDanmakuOpen(payload) {
+    return await _cz_danmakuDriver().onDanmakuOpen(payload || {});
+  },
+
+  async onDanmakuFrame(payload) {
+    return await _cz_danmakuDriver().onDanmakuFrame(payload || {});
+  },
+
+  async onDanmakuTick(payload) {
+    return await _cz_danmakuDriver().onDanmakuTick(payload || {});
+  },
+
+  async destroyDanmakuSession(payload) {
+    return await _cz_danmakuDriver().destroyDanmakuSession(payload || {});
   }
 };
